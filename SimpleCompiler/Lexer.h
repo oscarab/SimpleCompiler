@@ -1,0 +1,146 @@
+#ifndef LEXER_H
+#define LEXER_H
+
+#include <vector>
+#include <string>
+
+namespace LexicalAnalysis {
+
+	const bool FRONT = 0;
+	const bool AFTER = 1;
+
+	// 缓冲区大小为1MB
+	const int BLOCK_SIZE = 1 << 20;
+
+	// 单词种类
+	enum class TokenType {
+		KEY_WORD,	// 关键字
+		ID,			// 标识符
+		OPERATOR,	// 运算符
+		CONSTANT,	// 常数
+		BOUNDARY,	// 界符
+		BRACKET,	// 括号
+
+		FAIL,		// 分析失败
+		INCOMPLETE	// 未完成
+	};
+
+	// 单词属性
+	enum class TokenAttribute {
+		_int, _void, _if, _else, _while, _return,
+		RealString,
+		Add, Minus, Multiply, Divide, Assign, Equal, Greater, Less, Gequal, Lequal, Nequal,
+		RealConstant,
+		Comma, Semicolon,
+		LeftBrace, RightBrace, LeftBracket, RightBracket
+	};
+
+	class Token {
+	private:
+		TokenType type;
+		TokenAttribute attribute;
+
+		// 表指针
+		int index;
+	public:
+		// 构造函数
+		Token(TokenType, TokenAttribute);
+		Token(TokenType, TokenAttribute, int);
+
+		int getIndex();
+	};
+
+	// 词法分析器
+	class Lexer {
+	private:
+		// 读取与预处理器
+		Reader codeReader;
+
+		// 扫描器
+		Scanner scanner;
+
+		// 标识符表
+		std::vector<std::string> idTable;
+
+		// 常数表
+		std::vector<double> constantTable;
+
+		// 词法集合
+		std::vector<Token> tokens;
+	public:
+		Lexer(char*);
+
+		// 词法分析启动
+		void run();
+
+		~Lexer();
+	};
+
+	// 读入缓冲器
+	class Reader {
+	private:
+		// 缓冲区
+		char* buffer;
+
+		// 当前被扫描的位置
+		bool scanPart;
+
+	public:
+		// 构造函数
+		Reader(char*);
+
+		// 数据读取
+		void read();
+
+		// 预处理
+		void pretreat();
+
+		// 析构函数
+		~Reader();
+	};
+
+	// 扫描器
+	class Scanner {
+	private:
+		// 缓冲区
+		char* buffer;
+
+		// 起始指针
+		int startPoint;
+
+		// 扫描指针
+		int scanPoint;
+
+		// 标识符表与常数表的引用
+		std::vector<std::string>* idTable;
+		std::vector<double>* constantTable;
+
+		bool isDigit();
+		bool isLetter();
+	public:
+		Scanner(std::vector<std::string>*, std::vector<double>*);
+
+		// 指针前移
+		void step();
+
+		// 指针后移
+		void retract();
+
+		// 跳过空白
+		void skipBlank();
+
+		// 加入新标识符
+		int insertID();
+
+		// 加入新常数
+		int insertConstant();
+
+		// 组装Token
+		Token createToken();
+
+		// 扫描
+		Token scan();
+	};
+}
+
+#endif
