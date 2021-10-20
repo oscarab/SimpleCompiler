@@ -23,7 +23,8 @@ namespace LexicalAnalysis {
 		BRACKET,	// 括号
 
 		FAIL,		// 分析失败
-		INCOMPLETE	// 未完成
+		INCOMPLETE,	// 未完成
+		COMPLETE	// 完成
 	};
 
 	// 单词属性
@@ -33,7 +34,8 @@ namespace LexicalAnalysis {
 		Add, Minus, Multiply, Divide, Assign, Equal, Greater, Less, Gequal, Lequal, Nequal,
 		RealConstant,
 		Comma, Semicolon,
-		LeftBrace, RightBrace, LeftBracket, RightBracket
+		LeftBrace, RightBrace, LeftBracket, RightBracket,
+		_others, _fail, _incomplete, _complete
 	};
 
 	class Token {
@@ -131,6 +133,12 @@ namespace LexicalAnalysis {
 		// 扫描指针
 		int scanPoint;
 
+		// 结束位置
+		int endPoint;
+
+		// 完整度，为1表示完整，不会返回INCOMPLETE
+		int isComplete;
+
 		// 标识符表与常数表的引用
 		std::vector<std::string>* idTable;
 		std::vector<double>* constantTable;
@@ -140,14 +148,26 @@ namespace LexicalAnalysis {
 	public:
 		Scanner(std::vector<std::string>*, std::vector<double>*);
 
-		// 指针前移
+		// 获取buffer数组
+		void setBuffer(char*);
+
+		// 获取结束位置
+		void setEndPoint(int);
+
+		// 获取完整度
+		void setIsComplete(int);
+
+		// 指针前进
 		void step();
 
-		// 指针后移
+		// 指针后退
 		void retract();
 
 		// 跳过空白
 		void skipBlank();
+
+		// 查找关键字表
+		TokenAttribute reserve();
 
 		// 加入新标识符
 		int insertID();
@@ -156,7 +176,7 @@ namespace LexicalAnalysis {
 		int insertConstant();
 
 		// 组装Token
-		Token createToken();
+		//Token createToken();
 
 		// 扫描
 		Token scan();
