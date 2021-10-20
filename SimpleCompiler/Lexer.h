@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
 
 namespace LexicalAnalysis {
 
@@ -48,16 +49,20 @@ namespace LexicalAnalysis {
 		Token(TokenType, TokenAttribute, int);
 
 		int getIndex();
+		TokenType getType();
+		TokenAttribute getAttribute();
+
+		friend std::ostream& operator<<(std::ostream&, const Token&);
 	};
 
 	// 词法分析器
 	class Lexer {
 	private:
 		// 读取与预处理器
-		Reader codeReader;
+		Reader* codeReader;
 
 		// 扫描器
-		Scanner scanner;
+		Scanner* scanner;
 
 		// 标识符表
 		std::vector<std::string> idTable;
@@ -68,10 +73,13 @@ namespace LexicalAnalysis {
 		// 词法集合
 		std::vector<Token> tokens;
 	public:
-		Lexer(char*);
+		Lexer(const char*);
 
 		// 词法分析启动
 		void run();
+
+		// 获取词法集合
+		std::vector<Token> getTokens();
 
 		~Lexer();
 	};
@@ -82,18 +90,30 @@ namespace LexicalAnalysis {
 		// 缓冲区
 		char* buffer;
 
+		// 文件读入流
+		std::ifstream fin;
+
+		// 当前读入字节数
+		int readin;
+
 		// 当前被扫描的位置
 		bool scanPart;
 
 	public:
 		// 构造函数
-		Reader(char*);
+		Reader(const char*);
 
 		// 数据读取
-		void read();
+		bool read();
 
 		// 预处理
 		void pretreat();
+
+		// 获取读入字符数量
+		int getReadin();
+
+		// 当前需扫描位置
+		bool getScanPart();
 
 		// 析构函数
 		~Reader();
