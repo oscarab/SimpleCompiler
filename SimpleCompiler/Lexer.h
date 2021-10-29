@@ -4,8 +4,10 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <unordered_map>
+#include "Token.h"
 
-namespace LexicalAnalysis {
+namespace Lexical {
 
 	const bool FRONT = 0;
 	const bool AFTER = 1;
@@ -13,75 +15,27 @@ namespace LexicalAnalysis {
 	// 缓冲区大小为1MB
 	const int BLOCK_SIZE = 1 << 20;
 
-	// 单词种类
-	enum class TokenType {
-		KEY_WORD,	// 关键字
-		ID,			// 标识符
-		OPERATOR,	// 运算符
-		CONSTANT,	// 常数
-		BOUNDARY,	// 界符
-		BRACKET,	// 括号
-
-		FAIL,		// 分析失败
-		INCOMPLETE,	// 未完成
-		COMPLETE	// 完成
-	};
-
-	// 单词属性
-	enum class TokenAttribute {
-		_int, _void, _if, _else, _while, _return,
-		RealString,
-		Add, Minus, Multiply, Divide, Assign, Equal, Greater, Less, Gequal, Lequal, Nequal,
-		RealConstant,
-		Comma, Semicolon,
-		LeftBrace, RightBrace, LeftBracket, RightBracket,
-		_others, _fail, _incomplete, _complete
-	};
-
-	class Token {
-	private:
-		TokenType type;
-		TokenAttribute attribute;
-
-		// 表指针
-		int index;
-	public:
-		// 构造函数
-		Token(TokenType, TokenAttribute);
-		Token(TokenType, TokenAttribute, int);
-
-		int getIndex();
-		TokenType getType();
-		TokenAttribute getAttribute();
-
-		friend std::ostream& operator<<(std::ostream&, const Token&);
-	};
+	class Lexer;
+	class Reader;
+	class Scanner;
 
 	// 词法分析器
 	class Lexer {
 	private:
-		// 读取与预处理器
-		Reader* codeReader;
+		
+		Reader* codeReader;		// 读取与预处理器
+		Scanner* scanner;		// 扫描器
 
-		// 扫描器
-		Scanner* scanner;
+		std::vector<std::string> idTable;	// 标识符表
+		std::vector<double> constantTable;	// 常数表
+		std::vector<Token> tokens;			// 词法集合
 
-		// 标识符表
-		std::vector<std::string> idTable;
-
-		// 常数表
-		std::vector<double> constantTable;
-
-		// 词法集合
-		std::vector<Token> tokens;
 	public:
 		Lexer(const char*);
 
-		// 词法分析启动
-		void run();
-
-		// 获取词法集合
-		std::vector<Token> getTokens();
+		void run();						// 词法分析启动
+		std::vector<Token> getTokens();	// 获取词法集合
+		void show();					// 展示分析出的单词
 
 		~Lexer();
 	};
@@ -89,97 +43,60 @@ namespace LexicalAnalysis {
 	// 读入缓冲器
 	class Reader {
 	private:
-		// 缓冲区
-		char* buffer;
-
-		// 文件读入流
-		std::ifstream fin;
-
-		// 当前读入字节数
-		int readin;
-
-		// 当前被扫描的位置
-		bool scanPart;
+		
+		char* buffer;		// 缓冲区
+		std::ifstream fin;	// 文件读入流
+		int readin;			// 当前读入字节数
+		bool scanPart;		// 当前被扫描的位置
 
 	public:
-		// 构造函数
-		Reader(const char*);
+		Reader(const char*);	// 构造函数
 
-		// 数据读取
-		bool read();
+		bool read();			// 数据读取
+		void pretreat();		// 预处理
+		int getReadin();		// 获取读入字符数量
+		bool getScanPart();		// 当前需扫描位置
+		char* getBuffer();		// 获取缓冲区
 
-		// 预处理
-		void pretreat();
-
-		// 获取读入字符数量
-		int getReadin();
-
-		// 当前需扫描位置
-		bool getScanPart();
-
-		// 析构函数
-		~Reader();
+		~Reader();				// 析构函数
 	};
 
 	// 扫描器
 	class Scanner {
 	private:
-		// 缓冲区
-		char* buffer;
-
-		// 起始指针
-		int startPoint;
-
-		// 扫描指针
-		int scanPoint;
-
-		// 结束位置
-		int endPoint;
-
-		// 完整度，为1表示完整，不会返回INCOMPLETE
-		int isComplete;
+		
+		char* buffer;		// 缓冲区
+		int startPoint;		// 起始指针
+		int scanPoint;		// 扫描指针
+		int endPoint;		// 结束位置
+		int isComplete;		// 完整度，为1表示完整，不会返回INCOMPLETE
 
 		// 标识符表与常数表的引用
 		std::vector<std::string>* idTable;
 		std::vector<double>* constantTable;
+		std::unordered_map<std::string, int> tablePoint;
 
 		bool isDigit();
 		bool isLetter();
+		int isReachComplete();
+		
+		int step();					// 指针前进
+		void retract();				// 指针后退
+		void align();				// 指针对齐
+		void rollback();			// 撤销已经读取的字符
+		void skipBlank();			// 跳过空白
+
+		TokenAttribute reserve();	// 查找关键字表
+		int insertID();				// 加入新标识符
+		int insertConstant();		// 加入新常数
 	public:
 		Scanner(std::vector<std::string>*, std::vector<double>*);
 
-		// 获取buffer数组
-		void setBuffer(char*);
+		void setBuffer(char*);		// 获取buffer数组
+		void setEndPoint(int);		// 获取结束位置
+		void setIsComplete(int);	// 获取完整度
 
-		// 获取结束位置
-		void setEndPoint(int);
-
-		// 获取完整度
-		void setIsComplete(int);
-
-		// 指针前进
-		void step();
-
-		// 指针后退
-		void retract();
-
-		// 跳过空白
-		void skipBlank();
-
-		// 查找关键字表
-		TokenAttribute reserve();
-
-		// 加入新标识符
-		int insertID();
-
-		// 加入新常数
-		int insertConstant();
-
-		// 组装Token
-		//Token createToken();
-
-		// 扫描
-		Token scan();
+		Token scan();				// 扫描
 	};
 }
 

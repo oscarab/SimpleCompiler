@@ -139,11 +139,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Grammer.cpp" />
     <ClCompile Include="Lexer.cpp" />
+    <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="SimpleCompiler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Grammer.h" />
     <ClInclude Include="Lexer.h" />
+    <ClInclude Include="Machine.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Token.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

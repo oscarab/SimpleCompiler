@@ -13,17 +13,41 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\Lexer">
+      <UniqueIdentifier>{6e071fd3-4cfc-426f-ab85-92d343210576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Parser">
+      <UniqueIdentifier>{d18efece-05da-4f5e-9462-28ea2dd15336}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleCompiler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Lexer.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\Lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="Scanner.cpp">
+      <Filter>源文件\Lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="Grammer.cpp">
+      <Filter>源文件\Parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lexer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Token.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Grammer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Machine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
