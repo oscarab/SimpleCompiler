@@ -11,6 +11,7 @@ class Symbol;
 typedef std::string String;
 typedef std::vector<Symbol*> PSymbol;
 typedef std::unordered_map<String, int> StrMapInt;
+typedef std::unordered_map<Symbol, int> SymMapInt;
 typedef std::unordered_map<Symbol, std::set<Symbol*>> SymMapFirst;
 typedef std::unordered_map<Symbol, bool> SymMapBool;
 
@@ -42,7 +43,8 @@ public:
 
 	bool isEnd();
 	String getName();
-	Token& getToken();
+	Token getToken();
+	std::vector<PSymbol>* getProductions();
 	void insertProduction(PSymbol&);	// 插入新产生式
 
 	bool operator==(const Symbol& symbol) const;
@@ -51,7 +53,8 @@ public:
 class Grammer {
 private:
 	PSymbol symbols;			// 所有符号（包括终结符与非终结符）
-	StrMapInt mappingTable;		// 字符串与符号进行映射的表
+	StrMapInt strMapTable;		// 字符串与符号进行映射的表
+	SymMapInt symMapTable;		// 符号与下标进行映射的表
 	PSymbol rightSymbols;		// 出现在产生式左部的符号
 
 	SymMapBool canEmpty;		// 可空的非终结符
@@ -61,6 +64,13 @@ public:
 
 	void solveCanEmpty();		// 计算可空的非终结符
 	void solveFirst();			// 计算所有非终结符的First集合
+	void solveFirst(PSymbol&);
+
+	void getProduction(int, int, PSymbol&);
+	int getSymbolIndex(Symbol*);
+	PSymbol* getSymbols();
+
+	~Grammer();
 };
 
 #endif

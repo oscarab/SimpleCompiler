@@ -33,6 +33,9 @@
     <ClCompile Include="Grammer.cpp">
       <Filter>源文件\Parser</Filter>
     </ClCompile>
+    <ClCompile Include="Machine.cpp">
+      <Filter>源文件\Parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lexer.h">

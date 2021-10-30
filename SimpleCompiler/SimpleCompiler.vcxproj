@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="Grammer.cpp" />
     <ClCompile Include="Lexer.cpp" />
+    <ClCompile Include="Machine.cpp" />
     <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="SimpleCompiler.cpp" />
   </ItemGroup>
