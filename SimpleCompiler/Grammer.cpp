@@ -4,31 +4,30 @@
 #include <fstream>
 #include <unordered_map>
 
-Symbol::Symbol(Token _token, bool _end) : token(_token){
-	end = _end;
+Symbol::Symbol(Token _token) : token(_token){
+	end = true;
 }
 
-Symbol::Symbol(String _str, bool _end) : token(TokenType::END, TokenAttribute::None){
+Symbol::Symbol(String _str) : token(TokenType::END, TokenAttribute::None){
 	name = _str;
-	end = _end;
+	end = false;
 }
 
-bool Symbol::isEnd() {
+bool Symbol::isEnd() const{
 	return end;
 }
 
-String Symbol::getName() {
+String Symbol::getName() const {
 	return name;
 }
 
-Token Symbol::getToken() {
+Token Symbol::getToken() const {
 	return token;
 }
 
 std::vector<PSymbol>* Symbol::getProductions() {
 	std::vector<PSymbol>* _p = &production;
 	return _p;
-	//return production;
 }
 
 void Symbol::insertProduction(PSymbol& psymbol) {
@@ -73,7 +72,7 @@ Token Grammer::setToken(String s) {
 	else if (s == "{") return Token(TokenType::BRACKET, TokenAttribute::LeftBracket);
 	else if (s == "}") return Token(TokenType::BRACKET, TokenAttribute::RightBracket);
 	else if (s == "空") return Token(TokenType::EPSILON, TokenAttribute::None);
-	else if (s == "#") return Token(TokenType::END, TokenAttribute::None);
+	else return Token(TokenType::END, TokenAttribute::None);
 }
 
 void Grammer::getProduction(int numSymbol, int numProduction, PSymbol& psymbol) {
@@ -168,7 +167,7 @@ Grammer::Grammer(const char* filename) {
 		// 记录左侧非终结符
 		int pos = temp.find("::=");
 		String s = temp.substr(0, pos);
-		Symbol* tempSymbol = new Symbol(removeBrackets(s), false);	// "::="左侧非终结符 Symbol(String)
+		Symbol* tempSymbol = new Symbol(removeBrackets(s));	// "::="左侧非终结符 Symbol(String)
 		if (symMapTable.find(*tempSymbol) == symMapTable.end()) {	// 没有遇到过
 			symbols.push_back(tempSymbol);	// 所有符号
 			strMapTable.insert(std::pair<String, int>(s, symbols.size() - 1));	// 字符串与下标
@@ -183,7 +182,7 @@ Grammer::Grammer(const char* filename) {
 			if (temp[pos1] == '<') {	// 读到非终结符
 				while (temp[pos2] != '>') pos2++;
 				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
-				Symbol* _tempSymbol = new Symbol(removeBrackets(s), false);
+				Symbol* _tempSymbol = new Symbol(removeBrackets(s));
 				production.push_back(_tempSymbol);	// 更新当前产生式
 				// 非终结符只在作为左部符号时加入哈希表
 				delete _tempSymbol;
@@ -192,7 +191,7 @@ Grammer::Grammer(const char* filename) {
 			else if(temp[pos1] == '"') {	// 读到终结符
 				while (temp[pos2] != '"') pos2++;
 				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
-				Symbol* _tempSymbol = new Symbol(setToken(s), true);
+				Symbol* _tempSymbol = new Symbol(setToken(s));
 				production.push_back(_tempSymbol);	// 更新当前产生式
 				if (symMapTable.find(*_tempSymbol) == symMapTable.end()) {	// 没有遇到过
 					symbols.push_back(_tempSymbol);	// 所有符号

@@ -31,6 +31,18 @@ bool Item::isAccept(Symbol& symbol) {
 	return point >= prod.size() && production.symbolIndex == 0;
 }
 
+Production Item::getProduction() {
+	return production;
+}
+
+int Item::getPoint() {
+	return point;
+}
+
+Symbol* Item::getForward() {
+	return &forward;
+}
+
 bool Item::operator<(const Item& item) const {
 	if (point != item.point)
 		return point < item.point;
@@ -42,6 +54,13 @@ bool Item::operator<(const Item& item) const {
 		return production.productionIndex < item.production.productionIndex;
 
 	return item.forward == forward;
+}
+
+bool Item::operator==(const Item& item) const {
+	return point == item.point && 
+		production.symbolIndex == item.production.symbolIndex && 
+		production.productionIndex == item.production.productionIndex &&
+		item.forward == forward;
 }
 
 Machine::Machine(const char* fileName) {

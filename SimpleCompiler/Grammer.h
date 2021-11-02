@@ -15,20 +15,6 @@ typedef std::unordered_map<Symbol, int> SymMapInt;
 typedef std::unordered_map<Symbol, std::set<Symbol*>> SymMapFirst;
 typedef std::unordered_map<Symbol, bool> SymMapBool;
 
-namespace std {
-	template <>
-	class hash<Symbol> {
-	public:
-		size_t operator()(Symbol& symbol) const {
-			return hash<bool>()(symbol.isEnd()) ^ 
-				hash<string>()(symbol.getName()) ^
-				hash<int>()((int) symbol.getToken().getType()) ^
-				hash<int>()((int)symbol.getToken().getAttribute()) ^
-				hash<int>()(symbol.getToken().getIndex());
-		}
-	};
-};
-
 class Symbol {
 private:
 	bool end;			// 是否为终结符
@@ -38,17 +24,30 @@ private:
 	// 产生式右部
 	std::vector<PSymbol> production;
 public:
-	Symbol(Token, bool);	//
-	Symbol(String, bool);	//
+	Symbol(Token);	//
+	Symbol(String);	//
 
-	bool isEnd();			//
-	String getName();		//
-	Token getToken();		//
+	bool isEnd() const;			//
+	String getName() const;		//
+	Token getToken() const;		//
 	std::vector<PSymbol>* getProductions();
-	//std::vector<PSymbol> getProductions();
 	void insertProduction(PSymbol&);	// 插入新产生式
 
 	bool operator==(const Symbol& symbol) const;
+};
+
+namespace std {
+	template <>
+	class hash<Symbol> {
+	public:
+		size_t operator()(const Symbol& symbol) const {
+			return hash<bool>()(symbol.isEnd()) ^
+				hash<string>()(symbol.getName()) ^
+				hash<int>()((int)symbol.getToken().getType()) ^
+				hash<int>()((int)symbol.getToken().getAttribute()) ^
+				hash<int>()(symbol.getToken().getIndex());
+		}
+	};
 };
 
 class Grammer {

@@ -40,7 +40,8 @@ public:
 	bool isMoveIn(Symbol&);			// 对于输入的字符，是否可以移入
 	bool isAccept(Symbol&);			// 对于输入的字符，是否可以最终接受
 
-	bool operator<(const Item& item) const;
+	bool operator<(const Item&) const;
+	bool operator==(const Item&) const;
 };
 
 class Machine {
