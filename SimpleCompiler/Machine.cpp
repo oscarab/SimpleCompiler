@@ -2,8 +2,9 @@
 #include <unordered_set>
 #include <algorithm>
 
-Production::Production(int symbol, int product) {
-	symbolIndex = symbol;
+Production::Production(Symbol* symbol, int symInd, int product) {
+	symbolPoint = symbol;
+	symbolIndex = symInd;
 	productionIndex = product;
 }
 
@@ -13,6 +14,21 @@ Item::Item(Production prod, int p, Token forwd) : production(prod), forward(forw
 
 void Item::movePoint() {
 	point++;
+}
+
+bool Item::isReduction(Symbol& symbol) {
+	PSymbol& prod = (*production.symbolPoint->getProductions())[production.symbolIndex];
+	return point >= prod.size() && forward == symbol;
+}
+
+bool Item::isMoveIn(Symbol& symbol) {
+	PSymbol& prod = (*production.symbolPoint->getProductions())[production.symbolIndex];
+	return point < prod.size() && *prod[point] == symbol;
+}
+
+bool Item::isAccept(Symbol& symbol) {
+	PSymbol& prod = (*production.symbolPoint->getProductions())[production.symbolIndex];
+	return point >= prod.size() && production.symbolIndex == 0;
 }
 
 bool Item::operator<(const Item& item) const {
@@ -36,7 +52,11 @@ Machine::Machine(const char* fileName) {
 	// 建立第0个状态，里面只有一个项目
 	// S'->·S  #
 	State i0;
-	i0.insert(Item(Production(0, 0), 0, Token(TokenType::END, TokenAttribute::None)));
+	i0.insert(	Item(
+					Production((*grammer->getSymbols())[0], 0, 0), 
+					0, 
+					Token(TokenType::END, TokenAttribute::None))
+			 );
 	states.push_back(i0);
 }
 
@@ -47,14 +67,13 @@ void Machine::solveClosure(int index) {
 	for (auto p = state.begin(); p != state.end(); p++) {
 		Item item = *p;
 		Production prod_p = item.getProduction();
-		PSymbol closure;
 
 		// 获取产生式
-		grammer->getProduction(prod_p.symbolIndex, prod_p.productionIndex, closure);
+		PSymbol* closure = &(*prod_p.symbolPoint->getProductions())[prod_p.productionIndex];
 
-		if (item.getPoint() < closure.size()) {
+		if (item.getPoint() < closure->size()) {
 			// 获取 点 后的第一个符号
-			Symbol* symbol = closure[item.getPoint()];
+			Symbol* symbol = (*closure)[item.getPoint()];
 
 			// 当是非终结符时开始拓展
 			if (!symbol->isEnd()) {
@@ -67,12 +86,14 @@ void Machine::solveClosure(int index) {
 				for (int j = 0; j < len_prod; j++) {
 					// 求后续字符组成的串 的FIRST集合
 					PSymbol after;
-					after.insert(after.end(), closure.begin() + item.getPoint() + 1, closure.end());
+					if (item.getPoint() < closure->size() - 1)
+						after.insert(after.end(), closure->begin() + item.getPoint() + 1, closure->end());
+					after.push_back(item.getForward());
 					grammer->solveFirst(after);
 
 					// 将求得的FIRST集里面的符号，都作为前瞻，组成一系列项目
 					for (Symbol* sym_p : after) {
-						Item new_item = Item(Production(grammer->getSymbolIndex(symbol), j),
+						Item new_item = Item(Production(symbol, grammer->getSymbolIndex(symbol), j),
 											0, sym_p->getToken());
 						state.insert(new_item);
 					}
@@ -141,6 +162,18 @@ void Machine::create() {
 
 		pos++;
 	}
+}
+
+std::vector<State>* Machine::getStates() {
+	return &states;
+}
+
+Transfer* Machine::getTransfer() {
+	return &transfer;
+}
+
+Grammer* Machine::getGrammer() {
+	return grammer;
 }
 
 Machine::~Machine() {

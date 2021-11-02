@@ -80,8 +80,8 @@ void Lexer::run() {
 	}
 }
 
-std::vector<Token> Lexer::getTokens() {
-	return tokens;
+std::vector<Token>* Lexer::getTokens() {
+	return &tokens;
 }
 
 void Lexer::show() {
