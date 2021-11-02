@@ -10,6 +10,7 @@ enum class TokenType {
 	BOUNDARY,	// 界符
 	BRACKET,	// 括号
 	END,		// 终结#
+	EPSILON,	// 空
 
 	FAIL,		// 分析失败
 	INCOMPLETE,	// 未完成

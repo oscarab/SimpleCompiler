@@ -38,13 +38,14 @@ private:
 	// 产生式右部
 	std::vector<PSymbol> production;
 public:
-	Symbol(Token);
-	Symbol(String);
+	Symbol(Token, bool);	//
+	Symbol(String, bool);	//
 
-	bool isEnd();
-	String getName();
-	Token getToken();
+	bool isEnd();			//
+	String getName();		//
+	Token getToken();		//
 	std::vector<PSymbol>* getProductions();
+	//std::vector<PSymbol> getProductions();
 	void insertProduction(PSymbol&);	// 插入新产生式
 
 	bool operator==(const Symbol& symbol) const;
@@ -53,22 +54,25 @@ public:
 class Grammer {
 private:
 	PSymbol symbols;			// 所有符号（包括终结符与非终结符）
-	StrMapInt strMapTable;		// 字符串与符号进行映射的表
+	StrMapInt strMapTable;		// 字符串与下标进行映射的表
 	SymMapInt symMapTable;		// 符号与下标进行映射的表
-	PSymbol rightSymbols;		// 出现在产生式左部的符号
+	PSymbol leftSymbols;		// 出现在产生式左部的符号
 
 	SymMapBool canEmpty;		// 可空的非终结符
 	SymMapFirst firstSet;		// 每个非终结符对应的First集合
 public:
-	Grammer(const char*);
+	Grammer(const char*);		// const char*文件名 读文件
+
+	String removeBrackets(String);	// 移除非终结符的尖括号
+	Token setToken(String);		// 设置终结符字符串为Token格式
 
 	void solveCanEmpty();		// 计算可空的非终结符
 	void solveFirst();			// 计算所有非终结符的First集合
-	void solveFirst(PSymbol&);
+	void solveFirst(PSymbol&);	// 清掉原来的 改为first
 
-	void getProduction(int, int, PSymbol&);
+	void getProduction(int, int, PSymbol&);	// 第几个非终结符 第几个产生式
 	int getSymbolIndex(Symbol*);
-	PSymbol* getSymbols();
+	PSymbol* getSymbols();		// 返回symbols指针
 
 	~Grammer();
 };
