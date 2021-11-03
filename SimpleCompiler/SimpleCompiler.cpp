@@ -1,19 +1,13 @@
 ﻿#include <iostream>
 #include "Lexer.h"
-#include "Grammer.h"
+#include "Parser.h"
 
 int main()
 {
-    //Lexical::Lexer lexer("E:/编译原理/code.txt");
-    //lexer.run();
+    Parser parser("Grammer.txt");
+    parser.createTable();
 
-    //std::vector<Token>* tokens = lexer.getTokens();
-    //lexer.show();
-
-    Grammer grammer("E:/编译原理/grammer.txt");
-    grammer.solveCanEmpty();
-    grammer.solveFirst();
-
+    parser.analysis("code.txt");
     std::cout << "sdadw";
     return 0;
 }

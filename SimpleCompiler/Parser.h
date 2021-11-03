@@ -10,7 +10,12 @@ struct Action {
 	int go;				// 转移状态
 	Production prod;	// 归约用到的产生式
 
-	Action() : prod(NULL, 0, 0) { }
+	Action() : prod(NULL, 0, 0) { 
+		action = false;
+		reduction = false;
+		accept = false;
+		go = 0;
+	}
 };
 
 typedef std::vector<std::unordered_map<Symbol, Action>> ParserTable;

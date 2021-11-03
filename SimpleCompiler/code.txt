@@ -1,0 +1,24 @@
+int  program(int a,int b,int c)
+{
+	// 注释 
+	int i;
+	int j;
+	i=1.2e2; 	
+	if(a>(b+c))
+	{
+		j=a+(b*c+1);
+	}
+	else
+	{
+	/* dasd
+	dadw
+		da */
+		if (j!=a){
+		j=a;}
+	}
+	while(i<=100)
+	{
+		i=j*2;
+	}
+	return i;
+}

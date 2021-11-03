@@ -42,6 +42,8 @@ public:
 	TokenType getType();
 	TokenAttribute getAttribute();
 
+	void setDefaultIndex();
+
 	bool operator==(const Token& token) const;
 	bool operator<(const Token& token) const;
 };

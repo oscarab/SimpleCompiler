@@ -2,7 +2,7 @@
 #include "Lexer.h"
 
 Parser::Parser(const char* fileName) : machine(fileName) {
-
+	machine.create();
 }
 
 void Parser::createTable() {
@@ -14,45 +14,33 @@ void Parser::createTable() {
 	for (int i = 0; i < ssize; i++) {
 		SymMapInt& stateTrans = (*transfer)[i];
 		std::unordered_map<Symbol, Action> tuple;
+		State& state = (*states)[i];
 
-		// 遍历所有转出
-		for (auto iter = stateTrans.begin(); iter != stateTrans.end(); iter++) {
-			Symbol sym = iter->first;
-			int dest = iter->second;
-
+		// 遍历每一个项目
+		for (auto iter = state.begin(); iter != state.end(); iter++) {
+			Item item = *iter;
+			Symbol* sym = NULL;
 			Action action;
-			action.go = dest;
-			action.accept = false;
-
-			if (!sym.isEnd()) {
-				// 读到非终结符，仅作转移
-				action.action = false;
-				action.reduction = false;
-				tuple[sym] = action;
+			
+			if (item.isAccept()) {
+				// 接受
+				action.accept = true;
+				tuple[Symbol(Token(TokenType::END, TokenAttribute::None))] = action;
 			}
-			else {
+			else if (sym = item.isMoveIn()) {
+				// 移入
 				action.action = true;
-
-				// 读到终结符时判断进行归约还是移进，还是接受
-				State& state = (*states)[i];
-				for (Item item : state) {
-					if (item.isAccept(sym)) {
-						action.accept = true;
-						tuple[sym] = action;
-					}
-					else if (item.isMoveIn(sym)) {
-						tuple[sym] = action;
-					}
-					else if (item.isReduction(sym)) {
-						action.reduction = true;
-						action.prod = item.getProduction();
-						tuple[sym] = action;
-					}
-					else {
-						continue;
-					}
-					break;
-				}
+				action.go = stateTrans[*sym];
+				tuple[*sym] = action;
+			}
+			else if (item.isReduction()) {
+				// 归约
+				action.action = true;
+				action.reduction = true;
+				action.prod = item.getProduction();
+				int base = machine.getGrammer()->getProductionCount(action.prod.symbolIndex);
+				action.go = base + action.prod.productionIndex;
+				tuple[*item.getForward()] = action;
 			}
 		}
 
@@ -68,15 +56,15 @@ void Parser::analysis(const char* fileName) {
 	std::vector<Token>* tokens = lexer.getTokens();
 	int len = tokens->size();
 	Grammer* grammer = machine.getGrammer();
+	stateStack.push_back(0);
 
 	for (int i = 0; i < len; i++) {
 		int nowState = stateStack[stateStack.size() - 1];
 		Token token = (*tokens)[i];
+		token.setDefaultIndex();
 		Symbol symbol(token);
-		// 获取读入单词的Symbol对象
-		Symbol* read_sym = (*grammer->getSymbols())[grammer->getSymbolIndex(&symbol)];
 
-		// 遇到错误的语法
+		// 遇到可能错误的语法
 		if (table[nowState].count(symbol) == 0) {
 			break;
 		}
@@ -85,7 +73,7 @@ void Parser::analysis(const char* fileName) {
 		Action action = table[nowState][symbol];
 		
 		if (action.accept) {
-
+			int a = 1;
 		}
 		else if (action.reduction) {
 			// 归约
@@ -101,9 +89,12 @@ void Parser::analysis(const char* fileName) {
 			int dest = table[nowState][*product.symbolPoint].go;
 			symbolStack.push_back(product.symbolPoint);
 			stateStack.push_back(dest);
+			i--;
 		}
 		else {
 			// 移入
+			Symbol* read_sym = (*grammer->getSymbols())[grammer->getSymbolIndex(&symbol)];
+			
 			symbolStack.push_back(read_sym);
 			stateStack.push_back(action.go);
 		}

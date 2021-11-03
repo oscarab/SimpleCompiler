@@ -33,6 +33,10 @@ TokenAttribute Token::getAttribute() {
 	return attribute;
 }
 
+void Token::setDefaultIndex() {
+	index = -1;
+}
+
 bool Token::operator==(const Token& token) const {
 	return type == token.type && attribute == token.attribute && index == token.index;
 }
@@ -88,6 +92,9 @@ void Lexer::run() {
 			tokens.push_back(token);
 		}
 	}
+
+	// ¼ÓÈë½áÊø×Ö·û
+	tokens.push_back(Token(TokenType::END, TokenAttribute::None));
 }
 
 std::vector<Token>* Lexer::getTokens() {

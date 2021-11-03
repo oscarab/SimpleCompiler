@@ -35,6 +35,7 @@ public:
 	void insertProduction(PSymbol&);	// 插入新产生式
 
 	bool operator==(const Symbol& symbol) const;
+	bool operator<(const Symbol& symbol) const;
 };
 
 // Symbol的哈希函数模板定制
@@ -54,6 +55,7 @@ namespace std {
 
 class Grammer {
 private:
+
 	PSymbol symbols;			// 所有符号（包括终结符与非终结符）
 	StrMapInt strMapTable;		// 字符串与下标进行映射的表
 	SymMapInt symMapTable;		// 符号与下标进行映射的表
@@ -61,19 +63,22 @@ private:
 
 	SymMapBool canEmpty;		// 可空的非终结符
 	SymMapFirst firstSet;		// 每个非终结符对应的First集合
+
+	std::vector<int> prodCounter;
+
 public:
 	Grammer(const char*);		// 读取文法文件
 
-	String removeBrackets(String);		// 移除非终结符的尖括号
-	Token setToken(String);				// 设置终结符字符串为Token格式
+	Token setToken(String&);	// 设置终结符字符串为Token格式
 
 	void solveCanEmpty();		// 计算可空的非终结符
 	void solveFirst();			// 计算所有非终结符的First集合
-	void solveFirst(PSymbol&);	// 清掉原来的 改为first
+	void solveFirst(PSymbol&);	// 计算符号串的First集合
 
-	void getProduction(int, int, PSymbol&);	// 第几个非终结符 第几个产生式
+	void getProduction(int, int, PSymbol&);	// 获取指定产生式
 	int getSymbolIndex(Symbol*);
-	PSymbol* getSymbols();		// 返回symbols指针
+	PSymbol* getSymbols();					// 返回所有符号
+	int getProductionCount(int);			// 获取产生式计数
 
 	~Grammer();
 };

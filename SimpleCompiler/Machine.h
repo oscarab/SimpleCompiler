@@ -32,13 +32,13 @@ private:
 public:
 	Item(Production, int, Token);
 
-	Production getProduction();
-	int getPoint();
+	Production getProduction() const;
+	int getPoint() const;
 	Symbol* getForward();
 	void movePoint();				// 点 后移
-	bool isReduction(Symbol&);		// 对于输入的字符，是否可以归约
-	bool isMoveIn(Symbol&);			// 对于输入的字符，是否可以移入
-	bool isAccept(Symbol&);			// 对于输入的字符，是否可以最终接受
+	bool isReduction() const;		// 对于输入的字符，是否可以归约
+	Symbol* isMoveIn() const;		// 对于输入的字符，是否可以移入
+	bool isAccept() const;			// 对于输入的字符，是否可以最终接受
 
 	bool operator<(const Item&) const;
 	bool operator==(const Item&) const;
@@ -54,7 +54,7 @@ private:
 public:
 	Machine(const char*);
 
-	void solveClosure(int);			// 计算closure集
+	void solveClosure(State&);		// 计算closure集
 	void create();					// 构建自动机
 
 	std::vector<State>* getStates();// 获取所有状态

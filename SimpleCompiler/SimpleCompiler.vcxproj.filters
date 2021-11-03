@@ -57,4 +57,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="code.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="Grammer.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
