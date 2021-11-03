@@ -81,7 +81,6 @@ Machine::Machine(const char* fileName) {
 
 void Machine::solveClosure(int index) {
 	State& state = states[index];
-	int len = state.size();
 
 	for (auto p = state.begin(); p != state.end(); p++) {
 		Item item = *p;
@@ -120,15 +119,6 @@ void Machine::solveClosure(int index) {
 				}
 			}
 		}
-		
-		// 若集合未能扩大，则说明求解结束
-		if (len != state.size()) {
-			len = state.size();
-		}
-		else {
-			break;
-		}
-		
 	}
 
 }

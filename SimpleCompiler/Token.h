@@ -43,6 +43,7 @@ public:
 	TokenAttribute getAttribute();
 
 	bool operator==(const Token& token) const;
+	bool operator<(const Token& token) const;
 };
 
 #endif

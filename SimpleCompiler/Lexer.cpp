@@ -37,6 +37,16 @@ bool Token::operator==(const Token& token) const {
 	return type == token.type && attribute == token.attribute && index == token.index;
 }
 
+bool Token::operator<(const Token& token) const {
+	if (type != token.type) {
+		return type < token.type;
+	}
+	if (attribute != token.attribute) {
+		return attribute < token.attribute;
+	}
+	return index < token.index;
+}
+
 /***********´Ê·¨·ÖÎöÆ÷***********/
 
 Lexer::Lexer(const char* fileName) {

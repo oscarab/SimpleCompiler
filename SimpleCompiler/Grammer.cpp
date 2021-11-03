@@ -1,15 +1,43 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "Grammer.h"
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
 
+const std::unordered_map<String, Token> tokenConvert{ 
+	{"int", Token(TokenType::KEY_WORD, TokenAttribute::_int)},
+	{"void", Token(TokenType::KEY_WORD, TokenAttribute::_void)},
+	{"if", Token(TokenType::KEY_WORD, TokenAttribute::_if)},
+	{"else", Token(TokenType::KEY_WORD, TokenAttribute::_else)},
+	{"while", Token(TokenType::KEY_WORD, TokenAttribute::_while)},
+	{"return", Token(TokenType::KEY_WORD, TokenAttribute::_return)},
+	{"id", Token(TokenType::ID, TokenAttribute::RealID)},
+	{"num", Token(TokenType::CONSTANT, TokenAttribute::RealConstant)},
+	{"+", Token(TokenType::OPERATOR, TokenAttribute::Add)},
+	{"-", Token(TokenType::OPERATOR, TokenAttribute::Minus)},
+	{"*", Token(TokenType::OPERATOR, TokenAttribute::Multiply)},
+	{"/", Token(TokenType::OPERATOR, TokenAttribute::Divide)},
+	{"<", Token(TokenType::OPERATOR, TokenAttribute::Less)},
+	{">", Token(TokenType::OPERATOR, TokenAttribute::Greater)},
+	{"<=", Token(TokenType::OPERATOR, TokenAttribute::Lequal)},
+	{">=", Token(TokenType::OPERATOR, TokenAttribute::Gequal)},
+	{"==", Token(TokenType::OPERATOR, TokenAttribute::Equal)},
+	{"!=", Token(TokenType::OPERATOR, TokenAttribute::Nequal)},
+	{",", Token(TokenType::BOUNDARY, TokenAttribute::Comma)},
+	{";", Token(TokenType::BOUNDARY, TokenAttribute::Semicolon)},
+	{"{", Token(TokenType::BRACKET, TokenAttribute::LeftBrace)},
+	{"}", Token(TokenType::BRACKET, TokenAttribute::RightBrace)},
+	{"(", Token(TokenType::BRACKET, TokenAttribute::LeftBracket)},
+	{")", Token(TokenType::BRACKET, TokenAttribute::RightBracket)},
+	{"空", Token(TokenType::EPSILON, TokenAttribute::None)},
+	{"#", Token(TokenType::END, TokenAttribute::None)}
+};
+
 Symbol::Symbol(Token _token) : token(_token){
 	end = true;
 }
 
-Symbol::Symbol(String _str) : token(TokenType::END, TokenAttribute::None){
-	name = _str;
+Symbol::Symbol(String str) : token(TokenType::END, TokenAttribute::None){
+	name = str;
 	end = false;
 }
 
@@ -26,13 +54,12 @@ Token Symbol::getToken() const {
 }
 
 std::vector<PSymbol>* Symbol::getProductions() {
-	std::vector<PSymbol>* _p = &production;
-	return _p;
+	return &production;
 }
 
 void Symbol::insertProduction(PSymbol& psymbol) {
 	production.push_back(psymbol);	// 更新产生式
-	psymbol.clear();	//准备读入下一条产生式
+	psymbol.clear();				//准备读入下一条产生式
 }
 
 bool Symbol::operator==(const Symbol& symbol) const {
@@ -47,57 +74,55 @@ String Grammer::removeBrackets(String s) {
 
 // 设置终结符字符串为Token格式
 Token Grammer::setToken(String s) {
-	if (s == "int") return Token(TokenType::KEY_WORD, TokenAttribute::_int);
-	else if (s == "void") return Token(TokenType::KEY_WORD, TokenAttribute::_void);
-	else if (s == "if") return Token(TokenType::KEY_WORD, TokenAttribute::_if);
-	else if (s == "else") return Token(TokenType::KEY_WORD, TokenAttribute::_else);
-	else if (s == "while") return Token(TokenType::KEY_WORD, TokenAttribute::_while);
-	else if (s == "return") return Token(TokenType::KEY_WORD, TokenAttribute::_return);
-	else if (s == "id") return Token(TokenType::ID, TokenAttribute::RealID);
-	else if (s == "num") return Token(TokenType::CONSTANT, TokenAttribute::RealConstant);
-	else if (s == "+") return Token(TokenType::OPERATOR, TokenAttribute::Add);
-	else if (s == "-") return Token(TokenType::OPERATOR, TokenAttribute::Minus);
-	else if (s == "*") return Token(TokenType::OPERATOR, TokenAttribute::Multiply);
-	else if (s == "/") return Token(TokenType::OPERATOR, TokenAttribute::Divide);
-	else if (s == "<") return Token(TokenType::OPERATOR, TokenAttribute::Less);
-	else if (s == ">") return Token(TokenType::OPERATOR, TokenAttribute::Greater);
-	else if (s == "<=") return Token(TokenType::OPERATOR, TokenAttribute::Lequal);
-	else if (s == ">=") return Token(TokenType::OPERATOR, TokenAttribute::Gequal);
-	else if (s == "==") return Token(TokenType::OPERATOR, TokenAttribute::Equal);
-	else if (s == "!=") return Token(TokenType::OPERATOR, TokenAttribute::Nequal);
-	else if (s == ",") return Token(TokenType::BOUNDARY, TokenAttribute::Comma);
-	else if (s == ";") return Token(TokenType::BOUNDARY, TokenAttribute::Semicolon);
-	else if (s == "(") return Token(TokenType::BRACKET, TokenAttribute::LeftBrace);
-	else if (s == ")") return Token(TokenType::BRACKET, TokenAttribute::RightBrace);
-	else if (s == "{") return Token(TokenType::BRACKET, TokenAttribute::LeftBracket);
-	else if (s == "}") return Token(TokenType::BRACKET, TokenAttribute::RightBracket);
-	else if (s == "空") return Token(TokenType::EPSILON, TokenAttribute::None);
-	else return Token(TokenType::END, TokenAttribute::None);
+	auto index = tokenConvert.find(s);
+	if (index == tokenConvert.end()) {
+		return Token(TokenType::END, TokenAttribute::None);
+	}
+	else {
+		return (*index).second;
+	}
 }
 
 void Grammer::getProduction(int numSymbol, int numProduction, PSymbol& psymbol) {
-	psymbol = (*(leftSymbols[numSymbol]->getProductions()))[numProduction];	// 第numSymbol个非终结符，第numProduction个产生式
+	// 获取第numSymbol个非终结符，第numProduction个产生式
+	PSymbol& product = (*leftSymbols[numSymbol]->getProductions())[numProduction];
+	psymbol.insert(psymbol.end(), product.begin(), product.end());
 }
 
 // 计算可空的非终结符
 void Grammer::solveCanEmpty() {
-	int temp = canEmpty.size();
-	for (int i = 0; i < leftSymbols.size(); i++) {	// 每个左侧非终结符
-		//Symbol* tempSymbol = leftSymbols[i];
-		for (int j = 0; j < (*leftSymbols[i]->getProductions()).size(); j++) {	// 对应每个产生式
-			if (((*leftSymbols[i]->getProductions())[j])[0]->getToken() == Token(TokenType::END, TokenAttribute::None))	// 产生式中有空
-				canEmpty.insert(std::pair<Symbol, bool>(*leftSymbols[i], true));	// 插入可空符表
-			else {	// 不存在明显的空
-				for (int k = 0; k < (leftSymbols[i]->getProductions()[j]).size(); k++) {	// 产生式中每个符号
-					if (canEmpty.find(*((*leftSymbols[i]->getProductions())[j])[k]) == canEmpty.end())	// 产生式中均存在可空的非终结符
-						break;
-					canEmpty.insert(std::pair<Symbol, bool>(*leftSymbols[i], true));	// 插入可空符表
+	int sym_size;
+
+	do {
+		sym_size = canEmpty.size();
+		// 每个左侧非终结符
+		for (int i = 0; i < leftSymbols.size(); i++) {
+			std::vector<PSymbol>* prod = leftSymbols[i]->getProductions();
+			int prod_size = prod->size();
+
+			// 对应每个产生式
+			for (int j = 0; j < prod_size; j++) {
+				if ((*prod)[j][0]->getToken() == Token(TokenType::END, TokenAttribute::None)) {	// 产生式中有空
+					// 插入可空符表
+					canEmpty[*leftSymbols[i]] = true;
+				}
+				else {
+					// 不存在明显的空
+					int len = (*prod)[j].size();
+
+					// 遍历产生式中每个符号
+					for (int k = 0; k < len; k++) {
+						if (!canEmpty.count(*(*prod)[j][k])) {
+							break;
+						}
+						if (k == len - 1) {
+							canEmpty[*leftSymbols[i]] = true;
+						}
+					}
 				}
 			}
 		}
-	}
-	if (canEmpty.size() != temp)	// 可空符表未稳定，继续计算
-		solveCanEmpty();
+	} while (sym_size != canEmpty.size());
 }
 
 // 计算所有非终结符的First集合
@@ -162,11 +187,11 @@ Grammer::Grammer(const char* filename) {
 	if (!grammerFile.is_open())
 		std::cout << "打开文法文件失败！" << std::endl;
 
-	String temp;
-	while (getline(grammerFile, temp)) {	// 读每一行
+	String line;
+	while (getline(grammerFile, line)) {	// 读每一行
 		// 记录左侧非终结符
-		int pos = temp.find("::=");
-		String s = temp.substr(0, pos);
+		int pos = line.find("::=");
+		String s = line.substr(0, pos);
 		Symbol* tempSymbol = new Symbol(removeBrackets(s));	// "::="左侧非终结符 Symbol(String)
 		if (symMapTable.find(*tempSymbol) == symMapTable.end()) {	// 没有遇到过
 			symbols.push_back(tempSymbol);	// 所有符号
@@ -178,19 +203,19 @@ Grammer::Grammer(const char* filename) {
 		// 记录右侧符号
 		int pos1 = pos+3, pos2 = pos1;
 		PSymbol production;	// 存储产生式
-		while (pos1 <= temp.size()) {
-			if (temp[pos1] == '<') {	// 读到非终结符
-				while (temp[pos2] != '>') pos2++;
-				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
+		while (pos1 < line.size()) {
+			if (line[pos1] == '<') {	// 读到非终结符
+				while (line[pos2] != '>') pos2++;
+				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
 				Symbol* _tempSymbol = new Symbol(removeBrackets(s));
 				production.push_back(_tempSymbol);	// 更新当前产生式
 				// 非终结符只在作为左部符号时加入哈希表
 				delete _tempSymbol;
 				pos2++, pos1 = pos2;
 			}
-			else if(temp[pos1] == '"') {	// 读到终结符
-				while (temp[pos2] != '"') pos2++;
-				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
+			else if(line[pos1] == '"') {	// 读到终结符
+				while (line[pos2] != '"') pos2++;
+				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
 				Symbol* _tempSymbol = new Symbol(setToken(s));
 				production.push_back(_tempSymbol);	// 更新当前产生式
 				if (symMapTable.find(*_tempSymbol) == symMapTable.end()) {	// 没有遇到过
@@ -202,7 +227,7 @@ Grammer::Grammer(const char* filename) {
 					delete _tempSymbol;
 				pos2++, pos1 = pos2;
 			}
-			else if (temp[pos1] == '|') {
+			else if (line[pos1] == '|') {
 				pos2++, pos1 = pos2;
 				tempSymbol->insertProduction(production);	// 插入当前产生式并清空，准备读取下一条产生式
 			}
@@ -213,5 +238,7 @@ Grammer::Grammer(const char* filename) {
 }
 
 Grammer::~Grammer() {
-	
+	for (Symbol* sym : symbols) {
+		delete sym;
+	}
 }

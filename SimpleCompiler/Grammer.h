@@ -8,11 +8,12 @@
 #include <set>
 
 class Symbol;
+struct compare;
 typedef std::string String;
 typedef std::vector<Symbol*> PSymbol;
 typedef std::unordered_map<String, int> StrMapInt;
 typedef std::unordered_map<Symbol, int> SymMapInt;
-typedef std::unordered_map<Symbol, std::set<Symbol*>> SymMapFirst;
+typedef std::unordered_map<Symbol, std::set<Symbol*, compare>> SymMapFirst;
 typedef std::unordered_map<Symbol, bool> SymMapBool;
 
 class Symbol {
@@ -24,18 +25,19 @@ private:
 	// 产生式右部
 	std::vector<PSymbol> production;
 public:
-	Symbol(Token);	//
-	Symbol(String);	//
+	Symbol(Token);						// 构造终结符
+	Symbol(String);						// 构造非终结符
 
-	bool isEnd() const;			//
-	String getName() const;		//
-	Token getToken() const;		//
+	bool isEnd() const;					// 是否是终结符
+	String getName() const;				// 获取非终结符名字
+	Token getToken() const;				// 获取终结符Token
 	std::vector<PSymbol>* getProductions();
 	void insertProduction(PSymbol&);	// 插入新产生式
 
 	bool operator==(const Symbol& symbol) const;
 };
 
+// Symbol的哈希函数模板定制
 namespace std {
 	template <>
 	class hash<Symbol> {
@@ -60,10 +62,10 @@ private:
 	SymMapBool canEmpty;		// 可空的非终结符
 	SymMapFirst firstSet;		// 每个非终结符对应的First集合
 public:
-	Grammer(const char*);		// const char*文件名 读文件
+	Grammer(const char*);		// 读取文法文件
 
-	String removeBrackets(String);	// 移除非终结符的尖括号
-	Token setToken(String);		// 设置终结符字符串为Token格式
+	String removeBrackets(String);		// 移除非终结符的尖括号
+	Token setToken(String);				// 设置终结符字符串为Token格式
 
 	void solveCanEmpty();		// 计算可空的非终结符
 	void solveFirst();			// 计算所有非终结符的First集合
@@ -74,6 +76,22 @@ public:
 	PSymbol* getSymbols();		// 返回symbols指针
 
 	~Grammer();
+};
+
+// 自定义set的比较函数
+struct compare {
+	bool operator() (const Symbol*& a, const Symbol*& b) {
+		if (a->isEnd() != b->isEnd()) {
+			return a->isEnd() < b->isEnd();
+		}
+
+		if (a->getToken() == b->getToken()) {
+			return a->getName() < b->getName();
+		}
+		else {
+			return a->getToken() < b->getToken();
+		}
+	}
 };
 
 #endif
