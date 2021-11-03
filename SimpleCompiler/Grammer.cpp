@@ -102,7 +102,7 @@ void Grammer::solveCanEmpty() {
 
 			// 对应每个产生式
 			for (int j = 0; j < prod_size; j++) {
-				if ((*prod)[j][0]->getToken() == Token(TokenType::END, TokenAttribute::None)) {	// 产生式中有空
+				if ((*prod)[j][0]->getToken() == Token(TokenType::EPSILON, TokenAttribute::None)) {	// 产生式中有空
 					// 插入可空符表
 					canEmpty[*leftSymbols[i]] = true;
 				}
@@ -132,23 +132,26 @@ void Grammer::solveFirst() {
 		flag = false;
 		for (int i = 0; i < leftSymbols.size(); i++) {	// 每个左侧非终结符
 			for (int j = 0; j < (*leftSymbols[i]->getProductions()).size(); j++) {	// 对应每个产生式
-				Symbol* p = (*leftSymbols[i]->getProductions())[j][0];
-				while (p) {
+				PSymbol& prod = (*leftSymbols[i]->getProductions())[j];
+				int len = prod.size();
+				for (int k = 0; k < len; k++) {
+					Symbol* p = prod[k];
+
 					if (p->isEnd()) {	// 若是终结符
 					// 直接加到first集最后
 						if (p->getToken().getType() != TokenType::EPSILON) {	// 不考虑空
-							if(firstSet[*leftSymbols[i]].insert(p).second == true) flag = true;	// 成功插入
+							if (firstSet[*leftSymbols[i]].insert(p).second == true) flag = true;	// 成功插入
 						}
 						break;
 					}
 					else {	// 若是非终结符
-						if (firstSet.find(*p) == firstSet.end()) {	// 若有对应的First集
+						if (firstSet.find(*p) != firstSet.end()) {	// 若有对应的First集
 							// 将First逐个加入
-							for (std::set<Symbol*>::iterator k = firstSet[*p].begin(); k != firstSet[*p].end(); ++k) {
-								if(firstSet[*leftSymbols[i]].insert(*k).second == true) flag = true;
+							for (auto iter = firstSet[*p].begin(); iter != firstSet[*p].end(); ++iter) {
+								if (firstSet[*leftSymbols[i]].insert(*iter).second == true) flag = true;
 							}
 						}
-						if (canEmpty.find(*p) == canEmpty.end())	// 若非终结符可空
+						if (canEmpty.count(*p))	// 若非终结符可空
 							p++;	// 看下一个符号
 						else	// 不可空
 							break;
@@ -192,8 +195,8 @@ Grammer::Grammer(const char* filename) {
 	String line;
 	while (getline(grammerFile, line)) {	// 读每一行
 		// 记录左侧非终结符
-		int pos = temp.find("::=");
-		String s = temp.substr(0, pos);
+		int pos = line.find("::=");
+		String s = line.substr(0, pos);
 		Symbol* tempSymbol;
 
 		if (strMapTable.find(removeBrackets(s)) == strMapTable.end()) {
@@ -211,10 +214,10 @@ Grammer::Grammer(const char* filename) {
 		// 记录右侧符号
 		int pos1 = pos+3, pos2 = pos1+1;
 		PSymbol production;	// 存储产生式
-		while (pos1 < temp.size()) {
-			if (temp[pos1] == '<') {	// 读到非终结符
-				while (temp[pos2] != '>') pos2++;
-				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
+		while (pos1 < line.size()) {
+			if (line[pos1] == '<') {	// 读到非终结符
+				while (line[pos2] != '>') pos2++;
+				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
 
 				if (strMapTable.find(s) == strMapTable.end()) {	// 没有遇到过
 					Symbol* _tempSymbol = new Symbol(s);
@@ -231,9 +234,9 @@ Grammer::Grammer(const char* filename) {
 				pos1 = pos2 + 1;
 				pos2 = pos1 + 1;
 			}
-			else if(temp[pos1] == '"') {	// 读到终结符
-				while (temp[pos2] != '"') pos2++;
-				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
+			else if(line[pos1] == '"') {	// 读到终结符
+				while (line[pos2] != '"') pos2++;
+				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
 
 				if (strMapTable.find(s) == strMapTable.end()) {	// 没有遇到过
 					Symbol* _tempSymbol = new Symbol(setToken(s));
@@ -248,7 +251,7 @@ Grammer::Grammer(const char* filename) {
 				pos1 = pos2 + 1;
 				pos2 = pos1 + 1;
 			}
-			else if (temp[pos1] == '|') {
+			else if (line[pos1] == '|') {
 				pos1++;
 				pos2++;
 				tempSymbol->insertProduction(production);	// 插入当前产生式，准备读取下一条产生式

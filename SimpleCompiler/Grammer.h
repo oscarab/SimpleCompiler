@@ -80,7 +80,7 @@ public:
 
 // 自定义set的比较函数
 struct compare {
-	bool operator() (const Symbol*& a, const Symbol*& b) {
+	bool operator() (const Symbol* a, const Symbol* b) const {
 		if (a->isEnd() != b->isEnd()) {
 			return a->isEnd() < b->isEnd();
 		}
