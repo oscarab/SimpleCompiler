@@ -166,9 +166,11 @@ void Grammer::solveFirst(PSymbol& psymbol) {
 		psymbol.push_back(tempSymbol);
 	}
 	else {	// 首位非终结符
+		PSymbol temp(psymbol);
 		psymbol.clear();
-		for (std::set<Symbol*>::iterator i =
-			(firstSet.find(*psymbol[0])->second).begin(); i != (firstSet.find(*psymbol[0])->second).end(); ++i)
+		std::set<Symbol*>::iterator begin = (firstSet.find(*temp[0])->second).begin();
+		std::set<Symbol*>::iterator end = (firstSet.find(*temp[0])->second).end();
+		for (std::set<Symbol*>::iterator i = begin; i != end; ++i)
 			psymbol.push_back(*i);
 	}
 }
@@ -190,49 +192,69 @@ Grammer::Grammer(const char* filename) {
 	String line;
 	while (getline(grammerFile, line)) {	// 读每一行
 		// 记录左侧非终结符
-		int pos = line.find("::=");
-		String s = line.substr(0, pos);
-		Symbol* tempSymbol = new Symbol(removeBrackets(s));	// "::="左侧非终结符 Symbol(String)
-		if (symMapTable.find(*tempSymbol) == symMapTable.end()) {	// 没有遇到过
+		int pos = temp.find("::=");
+		String s = temp.substr(0, pos);
+		Symbol* tempSymbol;
+
+		if (strMapTable.find(removeBrackets(s)) == strMapTable.end()) {
+			tempSymbol = new Symbol(removeBrackets(s));	// "::="左侧非终结符 Symbol(String)
 			symbols.push_back(tempSymbol);	// 所有符号
-			strMapTable.insert(std::pair<String, int>(s, symbols.size() - 1));	// 字符串与下标
+			strMapTable.insert(std::pair<String, int>(removeBrackets(s), symbols.size() - 1));	// 字符串与下标
 			symMapTable.insert(std::pair<Symbol, int>(*tempSymbol, symbols.size() - 1));	// 符号与下标
+			leftSymbols.push_back(tempSymbol);	// 所有左部符号
 		}
-		leftSymbols.push_back(tempSymbol);	// 所有左部符号
+		else {
+			tempSymbol = symbols[strMapTable[removeBrackets(s)]];
+			leftSymbols.push_back(tempSymbol);
+		}
 
 		// 记录右侧符号
-		int pos1 = pos+3, pos2 = pos1;
+		int pos1 = pos+3, pos2 = pos1+1;
 		PSymbol production;	// 存储产生式
-		while (pos1 < line.size()) {
-			if (line[pos1] == '<') {	// 读到非终结符
-				while (line[pos2] != '>') pos2++;
-				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
-				Symbol* _tempSymbol = new Symbol(removeBrackets(s));
-				production.push_back(_tempSymbol);	// 更新当前产生式
-				// 非终结符只在作为左部符号时加入哈希表
-				delete _tempSymbol;
-				pos2++, pos1 = pos2;
-			}
-			else if(line[pos1] == '"') {	// 读到终结符
-				while (line[pos2] != '"') pos2++;
-				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
-				Symbol* _tempSymbol = new Symbol(setToken(s));
-				production.push_back(_tempSymbol);	// 更新当前产生式
-				if (symMapTable.find(*_tempSymbol) == symMapTable.end()) {	// 没有遇到过
+		while (pos1 < temp.size()) {
+			if (temp[pos1] == '<') {	// 读到非终结符
+				while (temp[pos2] != '>') pos2++;
+				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
+
+				if (strMapTable.find(s) == strMapTable.end()) {	// 没有遇到过
+					Symbol* _tempSymbol = new Symbol(s);
+					production.push_back(_tempSymbol);	// 更新当前产生式
 					symbols.push_back(_tempSymbol);	// 所有符号
 					strMapTable.insert(std::pair<String, int>(s, symbols.size() - 1));	// 字符串与下标
 					symMapTable.insert(std::pair<Symbol, int>(*_tempSymbol, symbols.size() - 1));	// 符号与下标
 				}
-				else
-					delete _tempSymbol;
-				pos2++, pos1 = pos2;
+				else {	// 遇到过
+					production.push_back(symbols[strMapTable[s]]);
+				}
+				// 非终结符只在作为左部符号时加入哈希表
+				//delete _tempSymbol;
+				pos1 = pos2 + 1;
+				pos2 = pos1 + 1;
 			}
-			else if (line[pos1] == '|') {
-				pos2++, pos1 = pos2;
-				tempSymbol->insertProduction(production);	// 插入当前产生式并清空，准备读取下一条产生式
+			else if(temp[pos1] == '"') {	// 读到终结符
+				while (temp[pos2] != '"') pos2++;
+				s = temp.substr(pos1 + 1, pos2 - pos1 - 1);
+
+				if (strMapTable.find(s) == strMapTable.end()) {	// 没有遇到过
+					Symbol* _tempSymbol = new Symbol(setToken(s));
+					production.push_back(_tempSymbol);	// 更新当前产生式
+					symbols.push_back(_tempSymbol);	// 所有符号
+					strMapTable.insert(std::pair<String, int>(s, symbols.size() - 1));	// 字符串与下标
+					symMapTable.insert(std::pair<Symbol, int>(*_tempSymbol, symbols.size() - 1));	// 符号与下标
+				}
+				else {	// 遇到过
+					production.push_back(symbols[strMapTable[s]]);
+				}
+				pos1 = pos2 + 1;
+				pos2 = pos1 + 1;
+			}
+			else if (temp[pos1] == '|') {
+				pos1++;
+				pos2++;
+				tempSymbol->insertProduction(production);	// 插入当前产生式，准备读取下一条产生式
 			}
 		}
-		tempSymbol->insertProduction(production);	// 末尾插入当前产生式并清空
+		tempSymbol->insertProduction(production);	// 末尾插入当前产生式
 	}
 	grammerFile.close();
 }
