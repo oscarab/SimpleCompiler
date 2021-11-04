@@ -12,6 +12,7 @@ class Symbol;
 typedef std::set<Item> State;
 typedef std::vector<SymMapInt> Transfer;
 
+// 产生式
 class Production {
 public:
 	Symbol* symbolPoint;	// 非终结符
@@ -27,10 +28,10 @@ private:
 
 	Production production;	// 产生式
 	int point;				// 点 所在位置
-	Symbol forward;			// 前瞻（肯定是终结符）
+	Symbol* forward;		// 前瞻（肯定是终结符）
 
 public:
-	Item(Production, int, Token);
+	Item(Production, int, Symbol*);
 
 	Production getProduction() const;
 	int getPoint() const;
@@ -44,6 +45,7 @@ public:
 	bool operator==(const Item&) const;
 };
 
+// 自动机
 class Machine {
 private:
 

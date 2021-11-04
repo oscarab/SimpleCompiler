@@ -22,3 +22,14 @@ int  program(int a,int b,int c)
 	}
 	return i;
 }
+
+void show() {
+	return;
+}
+
+int main() {
+	int a;
+	a = program(1, 2, 3);
+	show();
+	return 1;
+}

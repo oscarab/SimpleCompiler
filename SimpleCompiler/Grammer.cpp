@@ -57,6 +57,10 @@ std::vector<PSymbol>* Symbol::getProductions() {
 	return &production;
 }
 
+/**
+ * @brief 插入一条新产生式
+ * @param psymbol 产生式右部的符号串
+*/
 void Symbol::insertProduction(PSymbol& psymbol) {
 	production.push_back(psymbol);	// 更新产生式
 	psymbol.clear();				//准备读入下一条产生式
@@ -85,24 +89,15 @@ String removeBrackets(String& str) {
 	return str.substr(1, str.size() - 2);
 }
 
-// 设置终结符字符串为Token格式
-Token Grammer::setToken(String& str) {
-	auto index = tokenConvert.find(str);
-	if (index == tokenConvert.end()) {
-		return Token(TokenType::END, TokenAttribute::None);
-	}
-	else {
-		return (*index).second;
-	}
-}
-
 void Grammer::getProduction(int numSymbol, int numProduction, PSymbol& psymbol) {
 	// 获取第numSymbol个非终结符，第numProduction个产生式
 	PSymbol& product = (*symbols[numSymbol]->getProductions())[numProduction];
 	psymbol.insert(psymbol.end(), product.begin(), product.end());
 }
 
-// 计算可空的非终结符
+/**
+ * @brief 计算可空的非终结符
+*/
 void Grammer::solveCanEmpty() {
 	int sym_size;
 
@@ -138,15 +133,20 @@ void Grammer::solveCanEmpty() {
 	} while (sym_size != canEmpty.size());
 }
 
-// 计算所有非终结符的First集合
+/**
+ * @brief 计算所有非终结符的First集合
+*/
 void Grammer::solveFirst() {
 	bool flag = true;	// 记录是否插入成功
+
 	while (flag) {
 		flag = false;
+
 		for (int i = 0; i < leftSymbols.size(); i++) {	// 每个左侧非终结符
 			for (int j = 0; j < (*leftSymbols[i]->getProductions()).size(); j++) {	// 对应每个产生式
 				PSymbol& prod = (*leftSymbols[i]->getProductions())[j];
 				int len = prod.size();
+
 				for (int k = 0; k < len; k++) {
 					Symbol* p = prod[k];
 
@@ -175,6 +175,10 @@ void Grammer::solveFirst() {
 	}
 }
 
+/**
+ * @brief 计算符号串的FIRST集
+ * @param symbolStr 符号串
+*/
 void Grammer::solveFirst(PSymbol& symbolStr) {
 	PSymbol temp(symbolStr);
 	symbolStr.clear();
@@ -202,7 +206,15 @@ void Grammer::solveFirst(PSymbol& symbolStr) {
 }
 
 int Grammer::getSymbolIndex(Symbol* symbol) {
-	return symMapTable.find(*symbol)->second;
+	return symMapTable[*symbol];
+}
+
+Symbol* Grammer::getSymbol(Symbol* symbol) {
+	return symbols[symMapTable[*symbol]];
+}
+
+Symbol* Grammer::getSymbol(String str) {
+	return symbols[strMapTable[str]];
 }
 
 PSymbol* Grammer::getSymbols() {
@@ -213,6 +225,39 @@ int Grammer::getProductionCount(int index) {
 	return prodCounter[index];
 }
 
+Symbol* Grammer::insertSymbol(String& str, PSymbol* product) {
+	Symbol* symbol;
+
+	if (strMapTable.find(str) == strMapTable.end()) {
+		// 创建新符号
+		if (tokenConvert.count(str)) {
+			symbol = new Symbol((*tokenConvert.find(str)).second);
+		}
+		else {
+			symbol = new Symbol(str);
+		}
+
+		// 更新各种表
+		symbols.push_back(symbol);
+		strMapTable[str] = symbols.size() - 1;
+		symMapTable[*symbol] = symbols.size() - 1;
+	}
+	else {
+		// 找到已经存在的符号
+		symbol = symbols[strMapTable[str]];
+	}
+
+	if (product != NULL) {
+		product->push_back(symbol);
+	}
+
+	return symbol;
+}
+
+/**
+ * @brief 文法的构造函数
+ * @param filename 文法文件名
+*/
 Grammer::Grammer(const char* filename) {
 	// 读取并分析文法文件 Grammer.txt
 	std::ifstream grammerFile(filename);
@@ -223,20 +268,9 @@ Grammer::Grammer(const char* filename) {
 	while (getline(grammerFile, line)) {	// 读每一行
 		// 记录左侧非终结符
 		int pos = line.find("::=");
-		String s = line.substr(0, pos);
-		Symbol* symbol;
-
-		if (strMapTable.find(removeBrackets(s)) == strMapTable.end()) {
-			symbol = new Symbol(removeBrackets(s));				// "::="左侧非终结符 Symbol(String)
-			symbols.push_back(symbol);							// 所有符号
-			strMapTable[removeBrackets(s)] = symbols.size() - 1;	// 字符串与下标
-			symMapTable[*symbol] = symbols.size() - 1;			// 符号与下标
-			leftSymbols.push_back(symbol);						// 所有左部符号
-		}
-		else {
-			symbol = symbols[strMapTable[removeBrackets(s)]];
-			leftSymbols.push_back(symbol);
-		}
+		String str = line.substr(1, pos - 2);
+		Symbol* symbol = insertSymbol(str, NULL);
+		leftSymbols.push_back(symbol);
 
 		// 记录右侧符号
 		int pos1 = pos + 3, pos2 = pos1 + 1;
@@ -244,36 +278,17 @@ Grammer::Grammer(const char* filename) {
 		while (pos1 < line.size()) {
 			if (line[pos1] == '<') {	// 读到非终结符
 				while (line[pos2] != '>') pos2++;
-				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
+				str = line.substr(pos1 + 1, pos2 - pos1 - 1);
 
-				if (strMapTable.find(s) == strMapTable.end()) {	// 没有遇到过
-					Symbol* _tempSymbol = new Symbol(s);
-					production.push_back(_tempSymbol);	// 更新当前产生式
-					symbols.push_back(_tempSymbol);	// 所有符号
-					strMapTable.insert(std::pair<String, int>(s, symbols.size() - 1));	// 字符串与下标
-					symMapTable.insert(std::pair<Symbol, int>(*_tempSymbol, symbols.size() - 1));	// 符号与下标
-				}
-				else {	// 遇到过
-					production.push_back(symbols[strMapTable[s]]);
-				}
-				// 非终结符只在作为左部符号时加入哈希表
+				insertSymbol(str, &production);
 				pos1 = pos2 + 1;
 				pos2 = pos1 + 1;
 			}
 			else if(line[pos1] == '"') {	// 读到终结符
 				while (line[pos2] != '"') pos2++;
-				s = line.substr(pos1 + 1, pos2 - pos1 - 1);
+				str = line.substr(pos1 + 1, pos2 - pos1 - 1);
 
-				if (strMapTable.find(s) == strMapTable.end()) {	// 没有遇到过
-					Symbol* _tempSymbol = new Symbol(setToken(s));
-					production.push_back(_tempSymbol);	// 更新当前产生式
-					symbols.push_back(_tempSymbol);	// 所有符号
-					strMapTable.insert(std::pair<String, int>(s, symbols.size() - 1));	// 字符串与下标
-					symMapTable.insert(std::pair<Symbol, int>(*_tempSymbol, symbols.size() - 1));	// 符号与下标
-				}
-				else {	// 遇到过
-					production.push_back(symbols[strMapTable[s]]);
-				}
+				insertSymbol(str, &production);
 				pos1 = pos2 + 1;
 				pos2 = pos1 + 1;
 			}
@@ -286,6 +301,9 @@ Grammer::Grammer(const char* filename) {
 		symbol->insertProduction(production);	// 末尾插入当前产生式
 	}
 	grammerFile.close();
+
+	String end = String("#");
+	insertSymbol(end, NULL);
 
 	prodCounter.push_back(0);
 	for (Symbol* sym : symbols) {

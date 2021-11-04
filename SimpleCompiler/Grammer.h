@@ -68,15 +68,16 @@ private:
 
 public:
 	Grammer(const char*);		// 读取文法文件
-
-	Token setToken(String&);	// 设置终结符字符串为Token格式
+	Symbol* insertSymbol(String&, PSymbol*);
 
 	void solveCanEmpty();		// 计算可空的非终结符
 	void solveFirst();			// 计算所有非终结符的First集合
 	void solveFirst(PSymbol&);	// 计算符号串的First集合
 
 	void getProduction(int, int, PSymbol&);	// 获取指定产生式
-	int getSymbolIndex(Symbol*);
+	int getSymbolIndex(Symbol*);			// 根据符号获取下标
+	Symbol* getSymbol(Symbol*);				// 根据无内容符号获取实质符号
+	Symbol* getSymbol(String);				// 获取字符串对应的符号
 	PSymbol* getSymbols();					// 返回所有符号
 	int getProductionCount(int);			// 获取产生式计数
 
