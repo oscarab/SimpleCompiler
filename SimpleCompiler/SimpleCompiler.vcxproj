@@ -145,6 +145,7 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="SimpleCompiler.cpp" />
+    <ClCompile Include="SyntaxTree.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>

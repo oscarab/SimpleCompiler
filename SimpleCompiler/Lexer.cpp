@@ -5,6 +5,8 @@ using namespace Lexical;
 
 extern const char* TokenTypeStr[];
 extern const char* TokenAttrStr[];
+extern std::vector<std::string> idTable;	// 标识符表
+extern std::vector<double> constantTable;	// 常数表
 extern void tab(std::ostream& out, int level);
 
 /***********单词二元组***********/
@@ -59,9 +61,13 @@ void Token::write(std::ostream& out, int level, bool package) {
 	tab(out, level + 1);
 	out << "\"type\": \"" << TokenTypeStr[int(type)] << "\"" << std::endl;
 	
-	if (attribute == TokenAttribute::RealID || attribute == TokenAttribute::RealConstant) {
+	if (attribute == TokenAttribute::RealID) {
 		tab(out, level + 1);
-		out << "\"attribute\": " << index << "," << std::endl;
+		out << "\"attribute\": \"" << idTable[index] << "\"," << std::endl;
+	}
+	else if (attribute == TokenAttribute::RealConstant) {
+		tab(out, level + 1);
+		out << "\"attribute\": \"" << constantTable[index] << "\"," << std::endl;
 	}
 	else {
 		tab(out, level + 1);
@@ -74,8 +80,8 @@ void Token::write(std::ostream& out, int level, bool package) {
 	}
 }
 
-void Token::setDefaultIndex() {
-	index = -1;
+void Token::setIndex(int ind) {
+	index = ind;
 }
 
 bool Token::operator==(const Token& token) const {
@@ -142,6 +148,12 @@ void Lexer::run() {
 
 std::vector<Token>* Lexer::getTokens() {
 	return &tokens;
+}
+
+void Lexer::writeTokens(std::ostream& out) {
+	for (Token& token : tokens) {
+		token.write(out, 0, true);
+	}
 }
 
 Lexer::~Lexer() {

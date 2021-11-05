@@ -45,7 +45,7 @@ public:
 	TokenAttribute getAttribute();		// 获取单词属性
 
 	void write(std::ostream&, int, bool);
-	void setDefaultIndex();
+	void setIndex(int);
 
 	bool operator==(const Token& token) const;
 	bool operator<(const Token& token) const;

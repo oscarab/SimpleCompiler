@@ -42,6 +42,9 @@
     <ClCompile Include="Utility.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SyntaxTree.cpp">
+      <Filter>源文件\Parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lexer.h">

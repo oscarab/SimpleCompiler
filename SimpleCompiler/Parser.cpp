@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include "Lexer.h"
+#include <conio.h>
 #include <iostream>
 #include <iomanip>
 
@@ -66,7 +67,7 @@ void Parser::createTable() {
  * @param lexer 词法分析器
  * @return 是否分析成功
 */
-bool Parser::analysis(Lexical::Lexer* lexer) {
+bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 	// 获取Token流
 	std::vector<Token>* tokens = lexer->getTokens();
 	int len = tokens->size();
@@ -76,9 +77,26 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 	for (int i = 0; i < len; i++) {
 		int nowState = stateStack[stateStack.size() - 1];
 		Token token = (*tokens)[i];
-		token.setDefaultIndex();
+		int index = token.getIndex();
 		Symbol symbol(token);
 
+		// 单步分析的信息输出
+		if (step) {
+			system("cls");
+			writeStack(std::cout);
+			std::cout << std::endl << "Now at: " << std::endl;
+			symbol.write(std::cout, 0);
+			std::cout << std::endl << "Action: " << std::endl;
+		}
+		else {
+			writeStack(out);
+			out << std::endl << "Now at: " << std::endl;
+			symbol.write(out, 0);
+			out << std::endl << "Action: " << std::endl;
+		}
+
+		token.setIndex(-1);
+		symbol = Symbol(token);
 		// 遇到可能错误的语法
 		if (table[nowState].count(symbol) == 0) {
 			return false;
@@ -88,12 +106,19 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 		Action action = table[nowState][symbol];
 		
 		if (action.accept) {
+			if (step) {
+				std::cout << "accept!" << std::endl;
+			}
+			else {
+				out << "accept!" << std::endl;
+			}
 			return true;
 		}
 		else if (action.reduction) {
 			// 归约
 			Production product = action.prod;
 			int pop_cnt = (*product.symbolPoint->getProductions())[product.productionIndex].size();
+			int reduce_cnt = pop_cnt;
 
 			tree.construct(product.symbolPoint, pop_cnt);
 
@@ -108,14 +133,36 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 			symbolStack.push_back(product.symbolPoint);
 			stateStack.push_back(dest);
 			i--;
+
+			if (step) {
+				std::cout << "Reduce the" << reduce_cnt << "characters at the top of the stack" << std::endl;
+				std::cout << "Goto state " << dest;
+				_getch();
+			}
+			else {
+				out << "Reduce the" << reduce_cnt << "characters at the top of the stack" << std::endl;
+				out << "Goto state " << dest << std::endl;
+			}
 		}
 		else {
 			// 移入
-			Symbol* read_sym = grammer->getSymbol(&symbol);
+			token.setIndex(index);
+			Symbol* read_sym = new Symbol(token);
 			
 			tree.insert(read_sym);
 			symbolStack.push_back(read_sym);
 			stateStack.push_back(action.go);
+
+			if (step) {
+				std::cout << "Push the current symbol onto the symbol stack" << std::endl;
+				std::cout << "Goto state " << action.go;
+				_getch();
+			}
+			else {
+				out << "Push the current symbol onto the symbol stack" << std::endl;
+				out << "Goto state " << action.go << std::endl;
+			}
+
 		}
 	}
 	return false;
@@ -183,24 +230,10 @@ void Parser::writeTable(std::ostream& out) {
 		out << "|";
 		out << setw(width[0]) << i;
 		out << "|";
-		for (int j = 0; j < term_cnt; j++) {
-			Symbol* sym = terminator[j];
+		for (int j = 0; j < term_cnt + non_term_cnt; j++) {
+			Symbol* sym = j < term_cnt? terminator[j] : non_terminator[j - term_cnt];
 			auto iter = table[i].find(*sym);
 			out << setw(width[j + 1]);
-
-			if (iter != table[i].end()) {
-				Action action = (*iter).second;
-				out << action.toString();
-			}
-			else {
-				out << " ";
-			}
-			out << "|";
-		}
-		for (int j = 0; j < non_term_cnt; j++) {
-			Symbol* sym = non_terminator[j];
-			auto iter = table[i].find(*sym);
-			out << setw(width[term_cnt + j + 1]);
 
 			if (iter != table[i].end()) {
 				Action action = (*iter).second;
@@ -216,116 +249,50 @@ void Parser::writeTable(std::ostream& out) {
 }
 
 /**
- * @brief 获取语法树
- * @return 语法树
+ * @brief 栈 内容的显示
+ * @param out 输出
 */
-SyntaxTree* Parser::getTree() {
-	return &tree;
-}
+void Parser::writeStack(std::ostream& out) {
+	using namespace std;
+	int sym_cnt = symbolStack.size();
+	int state_cnt = stateStack.size();
+	int stack_h = sym_cnt > state_cnt ? sym_cnt : state_cnt;
+	stack_h += 2;
 
-/**
- * @brief 语法树结点构造
- * @param sym 符号
-*/
-SyntaxNode::SyntaxNode(Symbol* sym) {
-	symbol = sym;
-}
-
-/**
- * @brief 给结点增加孩子
- * @param node 孩子结点
-*/
-void SyntaxNode::addChild(SyntaxNode* node) {
-	child.push_back(node);
-}
-
-/**
- * @brief 输出
- * @param out 输出源
- * @param level 缩进
-*/
-void SyntaxNode::write(std::ostream& out, int level, char end) {
-	tab(out, level);
-	out << "{" << std::endl;
-
-	symbol->write(out, level + 1);
-
-	tab(out, level + 1);
-	out << "\"child\": [";
-
-	int size = child.size();
-	out << (size > 0? "" : "]") << std::endl;
-	for (int i = 0; i < size; i++) {
-		SyntaxNode* node = child[i];
-		
-		if (i < size - 1) {
-			node->write(out, level + 2, ',');
+	for (int i = stack_h - 1; i >= 0; i--) {
+		out << right << setw(5) << "|";
+		if (i < sym_cnt) {
+			if (symbolStack[i]->isEnd()) {
+				Token token = symbolStack[i]->getToken();
+				out << left << setw(15) << convertToString(token);
+			}
+			else {
+				out << left << setw(15) << symbolStack[i]->getName();
+			}
 		}
 		else {
-			node->write(out, level + 2, ']');
+			out << setw(15) << " ";
 		}
+		out << left << setw(5) << "|";
+
+		out << right << setw(5) << "|";
+		if (i < state_cnt) {
+			out << left << setw(15) << stateStack[i];
+		}
+		else {
+			out << left << setw(15) << " ";
+		}
+		out << left << setw(5) << "|";
+		out << endl;
 	}
 
-	tab(out, level);
-	out << "}" << end << std::endl;
-}
-
-/**
- * @brief 获取该结点的所有孩子
- * @return 所有孩子
-*/
-NodeList* SyntaxNode::getChildren() {
-	return &child;
-}
-
-/**
- * @brief 插入新的结点
- * @param symbol 符号
-*/
-void SyntaxTree::insert(Symbol* symbol) {
-	SyntaxNode* node = new SyntaxNode(symbol);
-
-	constructStack.push_back(node);
-}
-
-/**
- * @brief 插入新结点，并将构造栈中的若干结点作为新结点的孩子
- * @param symbol 符号
- * @param size 子结点数量
-*/
-void SyntaxTree::construct(Symbol* symbol, int size) {
-	int len = constructStack.size();
-	SyntaxNode* node = new SyntaxNode(symbol);
-
-	for (int i = len - size; i < len; i++) {
-		node->addChild(constructStack[i]);
+	out << setw(5) << " ";
+	for (int i = 0; i < 15; i++) {
+		out << "-";
 	}
-
-	while (size--) {
-		constructStack.pop_back();
+	out << setw(5) << " ";
+	out << setw(5) << " ";
+	for (int i = 0; i < 15; i++) {
+		out << "-";
 	}
-
-	constructStack.push_back(node);
-
-	if (constructStack.size() == 1) {
-		head = node;
-	}
-}
-
-SyntaxNode* SyntaxTree::getHead() {
-	return head;
-}
-
-void deleteNode(SyntaxNode* node) {
-	if (node == NULL)
-		return;
-
-	for (SyntaxNode* n : *node->getChildren()) {
-		deleteNode(n);
-	}
-	delete node;
-}
-
-SyntaxTree:: ~SyntaxTree() {
-	deleteNode(head);
 }

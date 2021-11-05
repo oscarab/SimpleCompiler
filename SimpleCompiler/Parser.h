@@ -21,6 +21,7 @@ public:
 
 	void addChild(SyntaxNode*);
 	NodeList* getChildren();
+	Symbol* getSymbol();
 	void write(std::ostream&, int, char);
 };
 
@@ -69,9 +70,9 @@ struct Action {
 class Parser {
 private:
 
-	Machine machine;		// 自动机
-	ParserTable table;		// 分析表
-	SyntaxTree tree;		// 语法树
+	Machine machine;					// 自动机
+	ParserTable table;					// 分析表
+	SyntaxTree tree;					// 语法树
 
 	std::vector<int> stateStack;		// 状态栈
 	std::vector<Symbol*> symbolStack;	// 符号栈
@@ -79,11 +80,12 @@ private:
 public:
 	Parser(const char*);
 
-	void createTable();					// 建立分析表
-	bool analysis(Lexical::Lexer*);		// 开始语法分析
+	void createTable();										// 建立分析表
+	bool analysis(Lexical::Lexer*, std::ostream&, bool);	// 开始语法分析
 
-	SyntaxTree* getTree();				// 获取语法树
-	void writeTable(std::ostream&);		// 输出分析表
+	SyntaxTree* getTree();									// 获取语法树
+	void writeTable(std::ostream&);							// 输出分析表
+	void writeStack(std::ostream&);							// 输出当前栈的内容
 };
 
 #endif
