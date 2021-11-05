@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include "Machine.h"
+#include "Lexer.h"
 
 struct Action;
 class SyntaxNode;
@@ -11,12 +12,16 @@ typedef std::vector<SyntaxNode*> NodeList;
 // 语法树结点
 class SyntaxNode {
 private:
+
 	Symbol* symbol;
 	NodeList child;
+
 public:
 	SyntaxNode(Symbol*);
+
 	void addChild(SyntaxNode*);
 	NodeList* getChildren();
+	void write(std::ostream&, int, char);
 };
 
 // 语法树
@@ -29,6 +34,7 @@ private:
 public:
 	void insert(Symbol*);
 	void construct(Symbol*, int);
+	SyntaxNode* getHead();
 
 	~SyntaxTree();
 };
@@ -47,6 +53,17 @@ struct Action {
 		accept = false;
 		go = 0;
 	}
+
+	String toString() {
+		if (accept) {
+			return String("acc");
+		}
+		if (!action) {
+			return std::to_string(go);
+		}
+		String str = reduction? "r" : "s";
+		return str + std::to_string(go);
+	}
 };
 
 class Parser {
@@ -62,8 +79,11 @@ private:
 public:
 	Parser(const char*);
 
-	void createTable();				// 建立分析表
-	void analysis(const char*);		// 开始语法分析
+	void createTable();					// 建立分析表
+	bool analysis(Lexical::Lexer*);		// 开始语法分析
+
+	SyntaxTree* getTree();				// 获取语法树
+	void writeTable(std::ostream&);		// 输出分析表
 };
 
 #endif

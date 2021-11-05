@@ -8,13 +8,13 @@
 						return Token(TokenType::INCOMPLETE, TokenAttribute::None);}}
 
 using namespace Lexical;
+
+extern std::vector<std::string> idTable;
+extern std::vector<double> constantTable;
 /* 扫描器 */
 
 // 构造函数
-Scanner::Scanner(std::vector<std::string>* id_table, std::vector<double>* constant_table) {
-	idTable = id_table;
-	constantTable = constant_table;
-
+Scanner::Scanner() {
 	endPoint = 0;
 	isComplete = 0;
 
@@ -116,8 +116,8 @@ int Scanner::insertID() {
 	int index;
 
 	if (tablePoint.find(str) == tablePoint.end()) {
-		idTable->push_back(str);	// 插入标识符表
-		index = idTable->size() - 1;
+		idTable.push_back(str);	// 插入标识符表
+		index = idTable.size() - 1;
 		tablePoint[str] = index;
 	}
 	else {
@@ -140,8 +140,8 @@ int Scanner::insertConstant() {
 
 	if (tablePoint.find(str) == tablePoint.end()) {
 		// 插入常数表
-		constantTable->push_back(constant);
-		index = constantTable->size() - 1;
+		constantTable.push_back(constant);
+		index = constantTable.size() - 1;
 		tablePoint[str] = index;
 	}
 	else {

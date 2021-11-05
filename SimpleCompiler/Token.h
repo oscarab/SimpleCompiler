@@ -1,6 +1,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <iostream>
+
 // 单词种类
 enum class TokenType {
 	KEY_WORD,	// 关键字
@@ -38,10 +40,11 @@ public:
 	Token(TokenType, TokenAttribute);
 	Token(TokenType, TokenAttribute, int);
 
-	int getIndex();
-	TokenType getType();
-	TokenAttribute getAttribute();
+	int getIndex();						// 获取表内位置
+	TokenType getType();				// 获取单词种类
+	TokenAttribute getAttribute();		// 获取单词属性
 
+	void write(std::ostream&, int, bool);
 	void setDefaultIndex();
 
 	bool operator==(const Token& token) const;

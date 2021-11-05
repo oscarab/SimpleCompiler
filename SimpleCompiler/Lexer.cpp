@@ -1,15 +1,11 @@
 #include "Lexer.h"
-
 #include <iostream>
 
 using namespace Lexical;
 
-const char* TokenTypeStr[] = {"KEY_WORD", "ID", "OPERATOR", "CONSTANT", 
-							"BOUNDARY", "BRACKET"};
-const char* TokenAttrStr[] = {"$int", "$void", "$if", "$else", "$while", 
-							"$return", "+", "-", "*", "/", "=", "==", 
-							">", "<", ">=", "<=", "!=", ",", ";", 
-							"{", "}", "(", ")"};
+extern const char* TokenTypeStr[];
+extern const char* TokenAttrStr[];
+extern void tab(std::ostream& out, int level);
 
 /***********单词二元组***********/
 
@@ -21,16 +17,61 @@ Token::Token(TokenType _type, TokenAttribute _attribute, int _index) {
 	index = _index;
 }
 
+/**
+ * @brief 获取符号表或常数表的下标
+ * @return 下标
+*/
 int Token::getIndex() {
 	return index;
 }
 
+/**
+ * @brief 获取种类
+ * @return 种类
+*/
 TokenType Token::getType() {
 	return type;
 }
 
+/**
+ * @brief 获取属性
+ * @return 属性
+*/
 TokenAttribute Token::getAttribute() {
 	return attribute;
+}
+
+/**
+ * @brief 输出
+ * @param out 输出源
+ * @param level 缩进
+ * @param package 最外是否用花括号包围
+*/
+void Token::write(std::ostream& out, int level, bool package) {
+	if (package) {
+		tab(out, level);
+		out << "{" << std::endl;
+	}
+	else {
+		level--;
+	}
+
+	tab(out, level + 1);
+	out << "\"type\": \"" << TokenTypeStr[int(type)] << "\"" << std::endl;
+	
+	if (attribute == TokenAttribute::RealID || attribute == TokenAttribute::RealConstant) {
+		tab(out, level + 1);
+		out << "\"attribute\": " << index << "," << std::endl;
+	}
+	else {
+		tab(out, level + 1);
+		out << "\"attribute\": \"" << TokenAttrStr[int(attribute)] << "\"" << "," << std::endl;
+	}
+
+	if (package) {
+		tab(out, level);
+		out << "}" << std::endl;
+	}
 }
 
 void Token::setDefaultIndex() {
@@ -55,10 +96,12 @@ bool Token::operator<(const Token& token) const {
 
 Lexer::Lexer(const char* fileName) {
 	codeReader = new Reader(fileName);
-	scanner = new Scanner(&idTable, &constantTable);
+	scanner = new Scanner();
 }
 
-
+/**
+ * @brief 运行词法分析
+*/
 void Lexer::run() {
 	scanner->setBuffer(codeReader->getBuffer());
 	scanner->setEndPoint(codeReader->getReadin());
@@ -99,22 +142,6 @@ void Lexer::run() {
 
 std::vector<Token>* Lexer::getTokens() {
 	return &tokens;
-}
-
-void Lexer::show() {
-	for (Token& token : tokens) {
-		std::cout << "<" << TokenTypeStr[int(token.getType())] << ", ";
-		if (token.getAttribute() == TokenAttribute::RealID) {
-			std::cout << idTable[token.getIndex()];
-		}
-		else if (token.getAttribute() == TokenAttribute::RealConstant) {
-			std::cout << constantTable[token.getIndex()];
-		}
-		else {
-			std::cout << TokenAttrStr[int(token.getAttribute())];
-		}
-		std::cout << ">" << std::endl;
-	}
 }
 
 Lexer::~Lexer() {

@@ -26,8 +26,6 @@ namespace Lexical {
 		Reader* codeReader;		// 读取与预处理器
 		Scanner* scanner;		// 扫描器
 
-		std::vector<std::string> idTable;	// 标识符表
-		std::vector<double> constantTable;	// 常数表
 		std::vector<Token> tokens;			// 词法集合
 
 	public:
@@ -71,9 +69,6 @@ namespace Lexical {
 		int endPoint;		// 结束位置
 		int isComplete;		// 完整度，为1表示完整，不会返回INCOMPLETE
 
-		// 标识符表与常数表的引用
-		std::vector<std::string>* idTable;
-		std::vector<double>* constantTable;
 		std::unordered_map<std::string, int> tablePoint;
 
 		bool isDigit();
@@ -90,7 +85,7 @@ namespace Lexical {
 		int insertID();				// 加入新标识符
 		int insertConstant();		// 加入新常数
 	public:
-		Scanner(std::vector<std::string>*, std::vector<double>*);
+		Scanner();
 
 		void setBuffer(char*);		// 获取buffer数组
 		void setEndPoint(int);		// 获取结束位置

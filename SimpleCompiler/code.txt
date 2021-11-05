@@ -24,6 +24,8 @@ int  program(int a,int b,int c)
 }
 
 void show() {
+	int a;
+	a = a + 1;
 	return;
 }
 

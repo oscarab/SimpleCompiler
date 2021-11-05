@@ -19,9 +19,6 @@
     <Filter Include="源文件\Parser">
       <UniqueIdentifier>{d18efece-05da-4f5e-9462-28ea2dd15336}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\ui">
-      <UniqueIdentifier>{b5ecde21-0dd3-4f1f-874f-cec46d7580ff}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleCompiler.cpp">
@@ -41,6 +38,9 @@
     </ClCompile>
     <ClCompile Include="Parser.cpp">
       <Filter>源文件\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

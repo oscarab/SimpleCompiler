@@ -34,6 +34,7 @@ public:
 	std::vector<PSymbol>* getProductions();
 	void insertProduction(PSymbol&);	// 插入新产生式
 
+	void write(std::ostream&, int);
 	bool operator==(const Symbol& symbol) const;
 	bool operator<(const Symbol& symbol) const;
 };
