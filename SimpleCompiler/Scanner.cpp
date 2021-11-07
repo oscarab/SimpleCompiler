@@ -243,6 +243,24 @@ Token Scanner::scan() {
 			return Token(TokenType::FAIL, TokenAttribute::None);
 		}
 	}
+	else if (buffer[scanPoint] == '&') {
+		STEP_OR_REQUEST;
+		if (buffer[scanPoint] == '&') {
+			return Token(TokenType::OPERATOR, TokenAttribute::AND);
+		}
+		else {
+			return Token(TokenType::FAIL, TokenAttribute::None);
+		}
+	}
+	else if (buffer[scanPoint] == '|') {
+		STEP_OR_REQUEST;
+		if (buffer[scanPoint] == '|') {
+			return Token(TokenType::OPERATOR, TokenAttribute::OR);
+		}
+		else {
+			return Token(TokenType::FAIL, TokenAttribute::OR);
+		}
+	}
 	else if (buffer[scanPoint] == ',') return Token(TokenType::BOUNDARY, TokenAttribute::Comma);
 	else if (buffer[scanPoint] == ';') return Token(TokenType::BOUNDARY, TokenAttribute::Semicolon);
 	else if (buffer[scanPoint] == '{') return Token(TokenType::BRACKET, TokenAttribute::LeftBrace);

@@ -77,7 +77,7 @@ void showHelp() {
     cout << "Welcome to use SimpleCompiler!" << endl << endl;
 
     cout << "USAGE:" << endl;
-    cout << "scc [options] <input grammer file> <input code file>" << endl << endl;
+    cout << "scc.exe [options] <input grammer file> <input code file>" << endl << endl;
 
     cout << "OPTIONS:" << endl;
     cout << left << setw(10) << "--help"  << "- Show help" << endl;

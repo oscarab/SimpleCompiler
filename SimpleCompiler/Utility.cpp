@@ -9,7 +9,7 @@ extern const char* TokenTypeStr[] = { "KEY_WORD", "ID", "OPERATOR", "CONSTANT",
 							"BOUNDARY", "BRACKET" , "END"};
 extern const char* TokenAttrStr[] = { "$int", "$void", "$if", "$else", "$while",
 							"$return", "+", "-", "*", "/", "=", "==",
-							">", "<", ">=", "<=", "!=", ",", ";",
+							">", "<", ">=", "<=", "!=", "&&", "||", ",", ";",
 							"{", "}", "(", ")", "CONSTANT", "ID", "NONE"};
 
 extern const std::unordered_map<std::string, Token> tokenConvert{
@@ -32,6 +32,8 @@ extern const std::unordered_map<std::string, Token> tokenConvert{
 	{">=", Token(TokenType::OPERATOR, TokenAttribute::Gequal)},
 	{"==", Token(TokenType::OPERATOR, TokenAttribute::Equal)},
 	{"!=", Token(TokenType::OPERATOR, TokenAttribute::Nequal)},
+	{"&&", Token(TokenType::OPERATOR, TokenAttribute::AND)},
+	{"||", Token(TokenType::OPERATOR, TokenAttribute::OR)},
 	{",", Token(TokenType::BOUNDARY, TokenAttribute::Comma)},
 	{";", Token(TokenType::BOUNDARY, TokenAttribute::Semicolon)},
 	{"{", Token(TokenType::BRACKET, TokenAttribute::LeftBrace)},

@@ -23,6 +23,7 @@ enum class TokenType {
 enum class TokenAttribute {
 	_int, _void, _if, _else, _while, _return,
 	Add, Minus, Multiply, Divide, Assign, Equal, Greater, Less, Gequal, Lequal, Nequal,
+	AND, OR,
 	Comma, Semicolon,
 	LeftBrace, RightBrace, LeftBracket, RightBracket,
 	RealConstant, RealID, None
