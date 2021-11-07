@@ -49,21 +49,20 @@ int main(int argc, char* argv[]) {
     }
 
     Lexical::Lexer lexer(code_file);
-    lexer.run();
+
+    std::ofstream fout("analysis.txt");
+    bool sucess = parser.analysis(&lexer, fout, analysis_step);
+    fout.close();
 
     // 判断是否输出所有单词
-    if (tokens_out) {
+    if (tokens_out && sucess) {
         std::ofstream fout("tokens.txt");
         lexer.writeTokens(fout);
         fout.close();
     }
 
-    std::ofstream fout("analysis.txt");
-    parser.analysis(&lexer, fout, analysis_step);
-    fout.close();
-
     // 判断是否输出语法树到文件
-    if (tree_out) {
+    if (tree_out && sucess) {
         std::ofstream fout("tree.txt");
         parser.getTree()->getHead()->write(fout, 0, ' ');
         fout.close();
@@ -81,9 +80,9 @@ void showHelp() {
     cout << "scc [options] <input grammer file> <input code file>" << endl << endl;
 
     cout << "OPTIONS:" << endl;
-    cout << left << setw(10) << "--help" << endl;
-    cout << left << setw(10) << "--tokens" << endl;
-    cout << left << setw(10) << "--tree" << endl;
-    cout << left << setw(10) << "--table" << endl;
-    cout << left << setw(10) << "--analysis" << endl;
+    cout << left << setw(10) << "--help"  << "- Show help" << endl;
+    cout << left << setw(10) << "--tokens"  << "- Output tokens to file" << endl;
+    cout << left << setw(10) << "--tree"  << "- Output syntax tree to file" << endl;
+    cout << left << setw(10) << "--table" << "- Output LR(1) analysis table to file" << endl;
+    cout << left << setw(10) << "--step" << "- Single step analysis" << endl;
 }

@@ -6,7 +6,7 @@
 #include "Token.h"
 
 extern const char* TokenTypeStr[] = { "KEY_WORD", "ID", "OPERATOR", "CONSTANT",
-							"BOUNDARY", "BRACKET" };
+							"BOUNDARY", "BRACKET" , "END"};
 extern const char* TokenAttrStr[] = { "$int", "$void", "$if", "$else", "$while",
 							"$return", "+", "-", "*", "/", "=", "==",
 							">", "<", ">=", "<=", "!=", ",", ";",
@@ -38,7 +38,8 @@ extern const std::unordered_map<std::string, Token> tokenConvert{
 	{"}", Token(TokenType::BRACKET, TokenAttribute::RightBrace)},
 	{"(", Token(TokenType::BRACKET, TokenAttribute::LeftBracket)},
 	{")", Token(TokenType::BRACKET, TokenAttribute::RightBracket)},
-	{"#", Token(TokenType::END, TokenAttribute::None)}
+	{"#", Token(TokenType::END, TokenAttribute::None)},
+	{"¿Õ", Token(TokenType::EPSILON, TokenAttribute::None)}
 };
 
 std::vector<std::string> idTable;	// ±êÊ¶·û±í
@@ -74,6 +75,11 @@ std::string convertToString(Token& token) {
 		return std::to_string(constantTable[token.getIndex()]);
 	}
 	else {
-		return std::string(TokenAttrStr[int(token.getAttribute())]);
+		if (token.getType() == TokenType::END) {
+			return std::string(TokenTypeStr[int(token.getType())]);
+		}
+		else {
+			return std::string(TokenAttrStr[int(token.getAttribute())]);
+		}
 	}
 }

@@ -23,6 +23,11 @@ Production::Production(Symbol* symbol, int symInd, int product) {
 Item::Item(Production prod, int p, Symbol* forwd) : production(prod) {
 	point = p;
 	forward = forwd;
+
+	PSymbol& r_prod = (*prod.symbolPoint->getProductions())[prod.productionIndex];
+	if (r_prod[0]->getToken().getType() == TokenType::EPSILON) {
+		point = 1;
+	}
 }
 
 /**

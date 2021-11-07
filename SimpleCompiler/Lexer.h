@@ -31,7 +31,7 @@ namespace Lexical {
 	public:
 		Lexer(const char*);
 
-		void run();							// 词法分析启动
+		bool run();							// 词法分析启动
 		std::vector<Token>* getTokens();	// 获取词法集合
 		void writeTokens(std::ostream&);	// 输出分析出的单词
 
@@ -87,9 +87,9 @@ namespace Lexical {
 	public:
 		Scanner();
 
-		void setBuffer(char*);		// 获取buffer数组
-		void setEndPoint(int);		// 获取结束位置
-		void setIsComplete(int);	// 获取完整度
+		void setBuffer(char*);		// 设置buffer数组
+		void setEndPoint(int);		// 设置结束位置
+		void setIsComplete(int);	// 设置获取完整度
 
 		Token scan();				// 扫描
 	};

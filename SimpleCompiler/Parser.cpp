@@ -69,10 +69,12 @@ void Parser::createTable() {
 */
 bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 	// 获取Token流
+	if (!lexer->run()) return false;
 	std::vector<Token>* tokens = lexer->getTokens();
 	int len = tokens->size();
 	Grammer* grammer = machine.getGrammer();
 	stateStack.push_back(0);
+	symbolStack.push_back(grammer->getSymbol(String("#")));
 
 	for (int i = 0; i < len; i++) {
 		int nowState = stateStack[stateStack.size() - 1];
@@ -88,17 +90,17 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 			symbol.write(std::cout, 0);
 			std::cout << std::endl << "Action: " << std::endl;
 		}
-		else {
-			writeStack(out);
-			out << std::endl << "Now at: " << std::endl;
-			symbol.write(out, 0);
-			out << std::endl << "Action: " << std::endl;
-		}
+		writeStack(out);
+		out << std::endl << "Now at: " << std::endl;
+		symbol.write(out, 0);
+		out << std::endl << "Action: " << std::endl;
 
 		token.setIndex(-1);
 		symbol = Symbol(token);
 		// 遇到可能错误的语法
 		if (table[nowState].count(symbol) == 0) {
+			std::cout << "syntax error!" << std::endl;
+			out << "syntax error!" << std::endl;
 			return false;
 		}
 
@@ -106,18 +108,15 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 		Action action = table[nowState][symbol];
 		
 		if (action.accept) {
-			if (step) {
-				std::cout << "accept!" << std::endl;
-			}
-			else {
-				out << "accept!" << std::endl;
-			}
+			std::cout << "Accept!" << std::endl;
+			out << "Accept!" << std::endl;
 			return true;
 		}
 		else if (action.reduction) {
 			// 归约
 			Production product = action.prod;
-			int pop_cnt = (*product.symbolPoint->getProductions())[product.productionIndex].size();
+			PSymbol& product_str = (*product.symbolPoint->getProductions())[product.productionIndex];
+			int pop_cnt = product_str[0]->getToken().getType() == TokenType::EPSILON? 0 : product_str.size();
 			int reduce_cnt = pop_cnt;
 
 			tree.construct(product.symbolPoint, pop_cnt);
@@ -135,14 +134,12 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 			i--;
 
 			if (step) {
-				std::cout << "Reduce the" << reduce_cnt << "characters at the top of the stack" << std::endl;
+				std::cout << "Reduce the " << reduce_cnt << " characters at the top of the stack" << std::endl;
 				std::cout << "Goto state " << dest;
 				_getch();
 			}
-			else {
-				out << "Reduce the" << reduce_cnt << "characters at the top of the stack" << std::endl;
-				out << "Goto state " << dest << std::endl;
-			}
+			out << "Reduce the " << reduce_cnt << " characters at the top of the stack" << std::endl;
+			out << "Goto state " << dest << std::endl;
 		}
 		else {
 			// 移入
@@ -158,10 +155,8 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 				std::cout << "Goto state " << action.go;
 				_getch();
 			}
-			else {
-				out << "Push the current symbol onto the symbol stack" << std::endl;
-				out << "Goto state " << action.go << std::endl;
-			}
+			out << "Push the current symbol onto the symbol stack" << std::endl;
+			out << "Goto state " << action.go << std::endl;
 
 		}
 	}
@@ -295,4 +290,9 @@ void Parser::writeStack(std::ostream& out) {
 	for (int i = 0; i < 15; i++) {
 		out << "-";
 	}
+	out << endl;
+
+	out << setw(5) << " " << setw(15) << "Symbol Stack";
+	out << setw(5) << " ";
+	out << setw(5) << " " << setw(15) << "State Stack" << endl;
 }

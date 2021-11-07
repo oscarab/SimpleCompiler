@@ -200,10 +200,6 @@ int Grammer::getSymbolIndex(Symbol* symbol) {
 	return symMapTable[*symbol];
 }
 
-Symbol* Grammer::getSymbol(Symbol* symbol) {
-	return symbols[symMapTable[*symbol]];
-}
-
 Symbol* Grammer::getSymbol(String str) {
 	return symbols[strMapTable[str]];
 }
@@ -216,6 +212,12 @@ int Grammer::getProductionCount(int index) {
 	return prodCounter[index];
 }
 
+/**
+ * @brief 插入新的Symbol
+ * @param str 符号的名字
+ * @param product 符号作为左部的产生式
+ * @return 新建的Symbol
+*/
 Symbol* Grammer::insertSymbol(String& str, PSymbol* product) {
 	Symbol* symbol;
 
@@ -252,8 +254,10 @@ Symbol* Grammer::insertSymbol(String& str, PSymbol* product) {
 Grammer::Grammer(const char* filename) {
 	// 读取并分析文法文件 Grammer.txt
 	std::ifstream grammerFile(filename);
-	if (!grammerFile.is_open())
-		std::cout << "打开文法文件失败！" << std::endl;
+	if (!grammerFile.is_open()) {
+		std::cout << "fail to open grammer file!" << std::endl;
+		exit(0);
+	}
 
 	String line;
 	while (getline(grammerFile, line)) {	// 读每一行

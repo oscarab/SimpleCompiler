@@ -59,7 +59,7 @@ void Token::write(std::ostream& out, int level, bool package) {
 	}
 
 	tab(out, level + 1);
-	out << "\"type\": \"" << TokenTypeStr[int(type)] << "\"" << std::endl;
+	out << "\"type\": \"" << TokenTypeStr[int(type)] << "\"," << std::endl;
 	
 	if (attribute == TokenAttribute::RealID) {
 		tab(out, level + 1);
@@ -108,7 +108,7 @@ Lexer::Lexer(const char* fileName) {
 /**
  * @brief 运行词法分析
 */
-void Lexer::run() {
+bool Lexer::run() {
 	scanner->setBuffer(codeReader->getBuffer());
 	scanner->setEndPoint(codeReader->getReadin());
 	scanner->setIsComplete(codeReader->getReadin() < BLOCK_SIZE);
@@ -131,8 +131,8 @@ void Lexer::run() {
 		}
 		else if (token.getType() == TokenType::FAIL) {
 			// 词法分析遭遇错误
-			std::cout << "词法错误" << std::endl;
-			break;
+			std::cout << "lexical error!" << std::endl;
+			return false;
 		}
 		else if (token.getType() == TokenType::COMPLETE) {
 			break;
@@ -144,6 +144,7 @@ void Lexer::run() {
 
 	// 加入结束字符
 	tokens.push_back(Token(TokenType::END, TokenAttribute::None));
+	return true;
 }
 
 std::vector<Token>* Lexer::getTokens() {
@@ -172,8 +173,8 @@ Reader::Reader(const char* fileName) {
 	// 读入1MB的代码数据
 	fin = std::ifstream(fileName, std::ios::in);
 	if (!fin.is_open()) {
-		std::cerr << "输入源代码文件打开失败！";
-		exit(1);
+		std::cerr << "fail to open code file";
+		exit(0);
 	}
 	fin.read(buffer, BLOCK_SIZE);
 

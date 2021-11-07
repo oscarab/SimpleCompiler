@@ -93,11 +93,11 @@ void SyntaxTree::construct(Symbol* symbol, int size) {
 	int len = constructStack.size();
 	SyntaxNode* node = new SyntaxNode(symbol);
 
-	for (int i = len - size; i < len; i++) {
+	for (int i = len - size; i < len && len > 0; i++) {
 		node->addChild(constructStack[i]);
 	}
 
-	while (size--) {
+	while (size-- && len > 0) {
 		constructStack.pop_back();
 	}
 

@@ -57,27 +57,26 @@ namespace std {
 class Grammer {
 private:
 
-	PSymbol symbols;			// 所有符号（包括终结符与非终结符）
-	StrMapInt strMapTable;		// 字符串与下标进行映射的表
-	SymMapInt symMapTable;		// 符号与下标进行映射的表
-	PSymbol leftSymbols;		// 出现在产生式左部的符号
+	PSymbol symbols;				// 所有符号（包括终结符与非终结符）
+	StrMapInt strMapTable;			// 字符串与下标进行映射的表
+	SymMapInt symMapTable;			// 符号与下标进行映射的表
+	PSymbol leftSymbols;			// 出现在产生式左部的符号
 
-	SymMapBool canEmpty;		// 可空的非终结符
-	SymMapFirst firstSet;		// 每个非终结符对应的First集合
+	SymMapBool canEmpty;			// 可空的非终结符
+	SymMapFirst firstSet;			// 每个非终结符对应的First集合
 
-	std::vector<int> prodCounter;
+	std::vector<int> prodCounter;	// 产生式序号
 
 public:
-	Grammer(const char*);		// 读取文法文件
-	Symbol* insertSymbol(String&, PSymbol*);
+	Grammer(const char*);					// 读取文法文件
+	Symbol* insertSymbol(String&, PSymbol*);// 新建Symbol
 
-	void solveCanEmpty();		// 计算可空的非终结符
-	void solveFirst();			// 计算所有非终结符的First集合
-	void solveFirst(PSymbol&);	// 计算符号串的First集合
+	void solveCanEmpty();					// 计算可空的非终结符
+	void solveFirst();						// 计算所有非终结符的First集合
+	void solveFirst(PSymbol&);				// 计算符号串的First集合
 
 	void getProduction(int, int, PSymbol&);	// 获取指定产生式
 	int getSymbolIndex(Symbol*);			// 根据符号获取下标
-	Symbol* getSymbol(Symbol*);				// 根据无内容符号获取实质符号
 	Symbol* getSymbol(String);				// 获取字符串对应的符号
 	PSymbol* getSymbols();					// 返回所有符号
 	int getProductionCount(int);			// 获取产生式计数
