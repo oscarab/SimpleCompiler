@@ -124,8 +124,11 @@ void deleteNode(SyntaxNode* node) {
 		deleteNode(n);
 	}
 
-	if (node->getSymbol()->getToken().getIndex() != -1) {
-		delete node->getSymbol();
+	if (node->getSymbol()->isEnd()) {
+		Terminator* terminator = static_cast<Terminator*>(node->getSymbol());
+		if (terminator->getToken().getIndex() != -1) {
+			delete node->getSymbol();
+		}
 	}
 	delete node;
 }

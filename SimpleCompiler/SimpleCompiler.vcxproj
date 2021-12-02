@@ -145,6 +145,7 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="SimpleCompiler.cpp" />
+    <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Machine.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="Symbol.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>

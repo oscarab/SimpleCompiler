@@ -22,12 +22,13 @@ Parser::Parser(const char* fileName) : machine(fileName) {
 void Parser::createTable() {
 	std::vector<State>* states = machine.getStates();
 	Transfer* transfer = machine.getTransfer();
+	Grammer* grammer = machine.getGrammer();
 	int ssize = transfer->size();
 
 	// 遍历所有状态
 	for (int i = 0; i < ssize; i++) {
 		SymMapInt& stateTrans = (*transfer)[i];
-		std::unordered_map<Symbol, Action> tuple;
+		std::unordered_map<Symbol*, Action> tuple;
 		State& state = (*states)[i];
 
 		// 遍历每一个项目
@@ -39,22 +40,22 @@ void Parser::createTable() {
 			if (item.isAccept()) {
 				// 接受
 				action.accept = true;
-				tuple[Symbol(Token(TokenType::END, TokenAttribute::None))] = action;
+				tuple[grammer->getSymbol("#")] = action;
 			}
 			else if (sym = item.isMoveIn()) {
 				// 移入
 				action.action = sym->isEnd();
-				action.go = stateTrans[*sym];
-				tuple[*sym] = action;
+				action.go = stateTrans[sym];
+				tuple[sym] = action;
 			}
 			else if (item.isReduction()) {
 				// 归约
 				action.action = true;
 				action.reduction = true;
-				action.prod = item.getProduction();
-				int base = machine.getGrammer()->getProductionCount(action.prod.symbolIndex);
-				action.go = base + action.prod.productionIndex;
-				tuple[*item.getForward()] = action;
+				action.product = item.getProduction();
+				int base = machine.getGrammer()->getProductionCount(action.product.symbolPoint);
+				action.go = base + action.product.productionIndex;
+				tuple[item.getForward()] = action;
 			}
 		}
 
@@ -80,32 +81,30 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 		int nowState = stateStack[stateStack.size() - 1];
 		Token token = (*tokens)[i];
 		int index = token.getIndex();
-		Symbol symbol(token);
+		Terminator terminator(token);
 
 		// 单步分析的信息输出
 		if (step) {
 			system("cls");
 			writeStack(std::cout);
 			std::cout << std::endl << "Now at: " << std::endl;
-			symbol.write(std::cout, 0);
+			terminator.write(std::cout, 0);
 			std::cout << std::endl << "Action: " << std::endl;
 		}
 		writeStack(out);
 		out << std::endl << "Now at: " << std::endl;
-		symbol.write(out, 0);
+		terminator.write(out, 0);
 		out << std::endl << "Action: " << std::endl;
 
-		token.setIndex(-1);
-		symbol = Symbol(token);
 		// 遇到可能错误的语法
-		if (table[nowState].count(symbol) == 0) {
+		if (table[nowState].count(&terminator) == 0) {
 			std::cout << "syntax error!" << std::endl;
 			out << "syntax error!" << std::endl;
 			return false;
 		}
 
 		// 需要采取的动作
-		Action action = table[nowState][symbol];
+		Action action = table[nowState][&terminator];
 		
 		if (action.accept) {
 			std::cout << "Accept!" << std::endl;
@@ -114,9 +113,13 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 		}
 		else if (action.reduction) {
 			// 归约
-			Production product = action.prod;
-			PSymbol& product_str = (*product.symbolPoint->getProductions())[product.productionIndex];
-			int pop_cnt = product_str[0]->getToken().getType() == TokenType::EPSILON? 0 : product_str.size();
+			Production product = action.product;
+			SymbolChain& product_str = (*product.symbolPoint->getProductions())[product.productionIndex];
+			
+			int pop_cnt = product_str.size();
+			if (product_str[0]->isEnd() && static_cast<Terminator*>(product_str[0])->getToken().isEmpty()) {
+				pop_cnt = 0;
+			}
 			int reduce_cnt = pop_cnt;
 
 			tree.construct(product.symbolPoint, pop_cnt);
@@ -127,7 +130,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 			}
 
 			nowState = stateStack[stateStack.size() - 1];
-			int dest = table[nowState][*product.symbolPoint].go;
+			int dest = table[nowState][product.symbolPoint].go;
 
 			symbolStack.push_back(product.symbolPoint);
 			stateStack.push_back(dest);
@@ -144,7 +147,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 		else {
 			// 移入
 			token.setIndex(index);
-			Symbol* read_sym = new Symbol(token);
+			Symbol* read_sym = new Terminator(token);
 			
 			tree.insert(read_sym);
 			symbolStack.push_back(read_sym);
@@ -173,15 +176,16 @@ void Parser::writeTable(std::ostream& out) {
 	int size = states->size();			// 状态数量
 
 	// 筛选终结符和非终结符
-	PSymbol terminator, non_terminator;
-	PSymbol* symbols = machine.getGrammer()->getSymbols();
+	std::vector<Terminator*> terminator;
+	std::vector<NonTerminator*> non_terminator;
+	SymbolChain* symbols = machine.getGrammer()->getSymbols();
 	int sym_cnt = symbols->size();
 	for (int i = 0; i < sym_cnt; i++) {
 		if ((*symbols)[i]->isEnd()) {
-			terminator.push_back((*symbols)[i]);
+			terminator.push_back(static_cast<Terminator*>((*symbols)[i]));
 		}
 		else {
-			non_terminator.push_back((*symbols)[i]);
+			non_terminator.push_back(static_cast<NonTerminator*>((*symbols)[i]));
 		}
 	}
 
@@ -192,13 +196,13 @@ void Parser::writeTable(std::ostream& out) {
 	int term_cnt = terminator.size(), non_term_cnt = non_terminator.size();
 	vector<int> width;
 	width.push_back(getWidth(size, "状态") + 4);
-	for (Symbol* sym : terminator) {
+	for (Terminator* sym : terminator) {
 		Token token = sym->getToken();
 		int w = getWidth(size, convertToString(token)) + 4;
 		width.push_back(w);
 		whole_w += w;
 	}
-	for (Symbol* sym : non_terminator) {
+	for (NonTerminator* sym : non_terminator) {
 		int w = getWidth(size, sym->getName()) + 4;
 		width.push_back(w);
 		whole_w += w;
@@ -226,8 +230,8 @@ void Parser::writeTable(std::ostream& out) {
 		out << setw(width[0]) << i;
 		out << "|";
 		for (int j = 0; j < term_cnt + non_term_cnt; j++) {
-			Symbol* sym = j < term_cnt? terminator[j] : non_terminator[j - term_cnt];
-			auto iter = table[i].find(*sym);
+			Symbol* sym = j < term_cnt? (Symbol*) terminator[j] : non_terminator[j - term_cnt];
+			auto iter = table[i].find(sym);
 			out << setw(width[j + 1]);
 
 			if (iter != table[i].end()) {
@@ -258,11 +262,11 @@ void Parser::writeStack(std::ostream& out) {
 		out << right << setw(5) << "|";
 		if (i < sym_cnt) {
 			if (symbolStack[i]->isEnd()) {
-				Token token = symbolStack[i]->getToken();
+				Token token = static_cast<Terminator*>(symbolStack[i])->getToken();
 				out << left << setw(15) << convertToString(token);
 			}
 			else {
-				out << left << setw(15) << symbolStack[i]->getName();
+				out << left << setw(15) << static_cast<NonTerminator*>(symbolStack[i])->getName();
 			}
 		}
 		else {

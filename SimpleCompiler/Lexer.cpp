@@ -44,6 +44,14 @@ TokenAttribute Token::getAttribute() {
 }
 
 /**
+ * @brief 单词是否为空
+ * @return true 若为空
+*/
+bool Token::isEmpty() {
+	return type == TokenType::EPSILON && attribute == TokenAttribute::None;
+}
+
+/**
  * @brief 输出
  * @param out 输出源
  * @param level 缩进
@@ -85,17 +93,7 @@ void Token::setIndex(int ind) {
 }
 
 bool Token::operator==(const Token& token) const {
-	return type == token.type && attribute == token.attribute && index == token.index;
-}
-
-bool Token::operator<(const Token& token) const {
-	if (type != token.type) {
-		return type < token.type;
-	}
-	if (attribute != token.attribute) {
-		return attribute < token.attribute;
-	}
-	return index < token.index;
+	return type == token.type && attribute == token.attribute;
 }
 
 /***********词法分析器***********/

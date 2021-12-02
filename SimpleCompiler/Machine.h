@@ -8,18 +8,17 @@
 #include <unordered_map>
 
 class Item;
-class Symbol;
+class NonTerminator;
 typedef std::set<Item> State;
 typedef std::vector<SymMapInt> Transfer;
 
 // 产生式
 class Production {
 public:
-	Symbol* symbolPoint;	// 非终结符
-	int symbolIndex;
-	int productionIndex;	// 产生式
+	NonTerminator* symbolPoint;		// 非终结符
+	int productionIndex;			// 产生式
 
-	Production(Symbol*, int, int);
+	Production(NonTerminator*, int);
 };
 
 // 项目

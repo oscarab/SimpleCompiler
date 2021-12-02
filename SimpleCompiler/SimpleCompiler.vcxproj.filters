@@ -19,6 +19,12 @@
     <Filter Include="源文件\Parser">
       <UniqueIdentifier>{d18efece-05da-4f5e-9462-28ea2dd15336}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Lexer">
+      <UniqueIdentifier>{ba5d82f5-8786-47f2-8ac5-462a1a55091a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Parser">
+      <UniqueIdentifier>{16dd6139-207e-47f9-9e79-df4edfa2fbf7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleCompiler.cpp">
@@ -45,22 +51,28 @@
     <ClCompile Include="SyntaxTree.cpp">
       <Filter>源文件\Parser</Filter>
     </ClCompile>
+    <ClCompile Include="Symbol.cpp">
+      <Filter>源文件\Parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lexer.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\Lexer</Filter>
     </ClInclude>
     <ClInclude Include="Token.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\Lexer</Filter>
     </ClInclude>
     <ClInclude Include="Grammer.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\Parser</Filter>
     </ClInclude>
     <ClInclude Include="Machine.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\Parser</Filter>
     </ClInclude>
     <ClInclude Include="Parser.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Symbol.h">
+      <Filter>头文件\Parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

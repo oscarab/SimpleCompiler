@@ -6,7 +6,7 @@
 
 struct Action;
 class SyntaxNode;
-typedef std::vector<std::unordered_map<Symbol, Action>> ParserTable;
+typedef std::vector<std::unordered_map<Symbol*, Action>> ParserTable;
 typedef std::vector<SyntaxNode*> NodeList;
 
 // 语法树结点
@@ -46,9 +46,9 @@ struct Action {
 	bool reduction;		// 是否是归约
 	bool accept;		// 接受状态
 	int go;				// 转移到的状态
-	Production prod;	// 归约用到的产生式
+	Production product;	// 归约用到的产生式
 
-	Action() : prod(NULL, 0, 0) { 
+	Action() : product(NULL, 0) { 
 		action = false;
 		reduction = false;
 		accept = false;

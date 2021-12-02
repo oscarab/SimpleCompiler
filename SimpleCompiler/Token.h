@@ -44,12 +44,12 @@ public:
 	int getIndex();						// 获取表内位置
 	TokenType getType();				// 获取单词种类
 	TokenAttribute getAttribute();		// 获取单词属性
+	bool isEmpty();						// 是否为空
 
 	void write(std::ostream&, int, bool);
 	void setIndex(int);
 
 	bool operator==(const Token& token) const;
-	bool operator<(const Token& token) const;
 };
 
 #endif

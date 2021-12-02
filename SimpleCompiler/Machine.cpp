@@ -5,12 +5,10 @@
 /**
  * @brief 产生式的构造函数
  * @param symbol 左部的非终结符
- * @param symInd 非终结符的下标位置
  * @param product 非终结符所拥有的产生式的位置
 */
-Production::Production(Symbol* symbol, int symInd, int product) {
+Production::Production(NonTerminator* symbol, int product) {
 	symbolPoint = symbol;
-	symbolIndex = symInd;
 	productionIndex = product;
 }
 
@@ -24,9 +22,13 @@ Item::Item(Production prod, int p, Symbol* forwd) : production(prod) {
 	point = p;
 	forward = forwd;
 
-	PSymbol& r_prod = (*prod.symbolPoint->getProductions())[prod.productionIndex];
-	if (r_prod[0]->getToken().getType() == TokenType::EPSILON) {
-		point = 1;
+	SymbolChain& r_prod = (*prod.symbolPoint->getProductions())[prod.productionIndex];
+	
+	if (r_prod[0]->isEnd()) {
+		Terminator* terminator_check = static_cast<Terminator*>(r_prod[0]);
+		if (terminator_check->getToken().isEmpty()) {
+			point = 1;
+		}
 	}
 }
 
@@ -42,7 +44,7 @@ void Item::movePoint() {
  * @return true 若是归约项目
 */
 bool Item::isReduction() const {
-	PSymbol& prod = (*production.symbolPoint->getProductions())[production.productionIndex];
+	SymbolChain& prod = (*production.symbolPoint->getProductions())[production.productionIndex];
 	return point >= prod.size();
 }
 
@@ -51,7 +53,7 @@ bool Item::isReduction() const {
  * @return Symbol* 要移入的符号
 */
 Symbol* Item::isMoveIn() const {
-	PSymbol& prod = (*production.symbolPoint->getProductions())[production.productionIndex];
+	SymbolChain& prod = (*production.symbolPoint->getProductions())[production.productionIndex];
 	
 	if (point < prod.size()) {
 		return prod[point];
@@ -65,8 +67,12 @@ Symbol* Item::isMoveIn() const {
  * @return true 若接受
 */
 bool Item::isAccept() const {
-	PSymbol& prod = (*production.symbolPoint->getProductions())[production.productionIndex];
-	return point >= prod.size() && production.symbolIndex == 0;
+	SymbolChain& product = (*production.symbolPoint->getProductions())[production.productionIndex];
+	
+	if (point >= product.size()) {
+		return !production.symbolPoint->isEnd() && static_cast<NonTerminator*>(production.symbolPoint)->getName() == "CProgram";
+	}
+	return false;
 }
 
 /**
@@ -97,8 +103,8 @@ bool Item::operator<(const Item& item) const {
 	if (point != item.point)
 		return point < item.point;
 	
-	if (production.symbolIndex != item.production.symbolIndex)
-		return production.symbolIndex < item.production.symbolIndex;
+	if (production.symbolPoint != item.production.symbolPoint)
+		return production.symbolPoint < item.production.symbolPoint;
 
 	if (production.productionIndex != item.production.productionIndex)
 		return production.productionIndex < item.production.productionIndex;
@@ -108,7 +114,7 @@ bool Item::operator<(const Item& item) const {
 
 bool Item::operator==(const Item& item) const {
 	return point == item.point && 
-		production.symbolIndex == item.production.symbolIndex && 
+		production.symbolPoint == item.production.symbolPoint &&
 		production.productionIndex == item.production.productionIndex &&
 		item.forward == forward;
 }
@@ -125,8 +131,9 @@ Machine::Machine(const char* fileName) {
 	// 建立第0个状态，里面只有一个项目
 	// S'->·S  #
 	State i0;
+	NonTerminator* firstS = static_cast<NonTerminator*>((*grammer->getSymbols())[0]);
 	i0.insert(	Item(
-					Production((*grammer->getSymbols())[0], 0, 0), 
+					Production(firstS, 0),
 					0, 
 					grammer->getSymbol(String("#")))
 			 );
@@ -146,23 +153,25 @@ void Machine::solveClosure(State& state) {
 			Production prod_p = item.getProduction();
 
 			// 获取产生式
-			PSymbol* closure = &(*prod_p.symbolPoint->getProductions())[prod_p.productionIndex];
+			SymbolChain* closure = &(*prod_p.symbolPoint->getProductions())[prod_p.productionIndex];
 
 			if (item.getPoint() < closure->size()) {
 				// 获取 点 后的第一个符号
 				Symbol* symbol = (*closure)[item.getPoint()];
+				
 
 				// 当是非终结符时开始拓展
 				if (!symbol->isEnd()) {
+					NonTerminator* non_terminator = static_cast<NonTerminator*>(symbol);
 
 					// 获取这个非终结符的所有产生式
-					std::vector<PSymbol>* all_prod = symbol->getProductions();
+					std::vector<SymbolChain>* all_prod = non_terminator->getProductions();
 					int len_prod = all_prod->size();
 
 					// 遍历所有产生式
 					for (int j = 0; j < len_prod; j++) {
 						// 求后续字符组成的串的FIRST集合
-						PSymbol after_first;
+						SymbolChain after_first;
 						if (item.getPoint() < closure->size() - 1)
 							after_first.insert(after_first.end(), closure->begin() + item.getPoint() + 1, closure->end());
 						after_first.push_back(item.getForward());
@@ -170,7 +179,7 @@ void Machine::solveClosure(State& state) {
 
 						// 将求得的FIRST集里面的符号，都作为前瞻，组成一系列项目
 						for (Symbol* sym_p : after_first) {
-							Item new_item = Item(Production(symbol, grammer->getSymbolIndex(symbol), j),
+							Item new_item = Item(Production(non_terminator, j),
 								0, sym_p);
 							state.insert(new_item);
 						}
@@ -193,7 +202,7 @@ void Machine::create() {
 
 	while (pos < states.size()) {
 		// 获取所有符号
-		PSymbol* all_sym = grammer->getSymbols();
+		SymbolChain* all_sym = grammer->getSymbols();
 
 		// 用每一个符号去试探是否可以转移
 		for (Symbol* sym : *all_sym) {
@@ -203,10 +212,7 @@ void Machine::create() {
 			for (auto p = state.begin(); p != state.end(); p++) {
 				Item item = *p;
 				Production prod_p = item.getProduction();
-				PSymbol prod;
-
-				// 获取产生式
-				grammer->getProduction(prod_p.symbolIndex, prod_p.productionIndex, prod);
+				SymbolChain& prod = (*prod_p.symbolPoint->getProductions())[prod_p.productionIndex];
 
 				// 遇到可转移的项目，加到新状态中
 				if (item.getPoint() < prod.size() && *(prod[item.getPoint()]) == *sym) {
@@ -225,13 +231,13 @@ void Machine::create() {
 
 				if (p != states.end()) {
 					// 已经有该状态，直接连接
-					transfer[pos][*sym] = p - states.begin();
+					transfer[pos][sym] = p - states.begin();
 				}
 				else {
 					// 创建新的状态
 					states.push_back(new_state);
 					transfer.push_back(SymMapInt());
-					transfer[pos][*sym] = states.size() - 1;
+					transfer[pos][sym] = states.size() - 1;
 				}
 			}
 		}
