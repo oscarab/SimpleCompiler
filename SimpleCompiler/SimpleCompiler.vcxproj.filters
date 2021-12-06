@@ -25,6 +25,15 @@
     <Filter Include="头文件\Parser">
       <UniqueIdentifier>{16dd6139-207e-47f9-9e79-df4edfa2fbf7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Semantic">
+      <UniqueIdentifier>{f914fa9f-ebd8-43f6-baf3-6885f6ef5a7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Semantic">
+      <UniqueIdentifier>{ad9e6d04-7309-4d09-9dee-45aab1efe8d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Reflect">
+      <UniqueIdentifier>{7e62bb61-6202-4753-b872-4d90297000a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleCompiler.cpp">
@@ -54,6 +63,9 @@
     <ClCompile Include="Symbol.cpp">
       <Filter>源文件\Parser</Filter>
     </ClCompile>
+    <ClCompile Include="SemanticsFunction.cpp">
+      <Filter>源文件\Semantic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lexer.h">
@@ -73,6 +85,18 @@
     </ClInclude>
     <ClInclude Include="Symbol.h">
       <Filter>头文件\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Quaternion.h">
+      <Filter>头文件\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="SemanticAnalyzer.h">
+      <Filter>头文件\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="SemanticAction.h">
+      <Filter>头文件\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="ReflectBase.h">
+      <Filter>头文件\Reflect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

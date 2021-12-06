@@ -6,7 +6,9 @@ int  program(int a,int b,int c)
 	i=1.2e2; 	
 	if(a>(b+c))
 	{
-		j=a+(b*c+1);
+		j=a+
+		
+		a*b*c;
 	}
 	else
 	{

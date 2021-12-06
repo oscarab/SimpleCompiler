@@ -144,6 +144,7 @@
     <ClCompile Include="Machine.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Scanner.cpp" />
+    <ClCompile Include="SemanticsFunction.cpp" />
     <ClCompile Include="SimpleCompiler.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
@@ -154,6 +155,10 @@
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Machine.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="Quaternion.h" />
+    <ClInclude Include="ReflectBase.h" />
+    <ClInclude Include="SemanticAction.h" />
+    <ClInclude Include="SemanticAnalyzer.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
