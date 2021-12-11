@@ -138,7 +138,7 @@ SymbolChain* Grammer::getSymbols() {
 }
 
 int Grammer::getProductionCount(Symbol* symbol) {
-	return prodCounter[symMapTable[symbol]];
+	return productCounter[prodMapTable[symbol]];
 }
 
 /**
@@ -196,6 +196,7 @@ Grammer::Grammer(const char* filename) {
 		Symbol* symbol = insertSymbol(str, NULL);
 		NonTerminator* non_terminator = static_cast<NonTerminator*>(symbol);
 		leftSymbols.push_back(symbol);
+		prodMapTable[symbol] = leftSymbols.size() - 1;
 
 		// ¼ÇÂ¼ÓÒ²à·ûºÅ
 		int pos1 = pos + 3, pos2 = pos1 + 1;
@@ -230,17 +231,12 @@ Grammer::Grammer(const char* filename) {
 	String end = String("#");
 	insertSymbol(end, NULL);
 
-	prodCounter.push_back(0);
-	for (Symbol* sym : symbols) {
-		int p = prodCounter.size();
+	productCounter.push_back(0);
+	for (Symbol* sym : leftSymbols) {
+		int p = productCounter.size();
 
-		if (sym->isEnd()) {
-			prodCounter.push_back(prodCounter[p - 1]);
-		}
-		else {
-			NonTerminator* non_terminator = static_cast<NonTerminator*>(sym);
-			prodCounter.push_back(prodCounter[p - 1] + non_terminator->getProductions()->size());
-		}
+		NonTerminator* non_terminator = static_cast<NonTerminator*>(sym);
+		productCounter.push_back(productCounter[p - 1] + non_terminator->getProductions()->size());
 	}
 }
 

@@ -3,7 +3,8 @@ int  program(int a,int b,int c)
 	// 注释 
 	int i;
 	int j;
-	i=1.2e2; 	
+	i=(i<j)+i;
+	i=i+j;
 	if(a>(b+c))
 	{
 		j=a+

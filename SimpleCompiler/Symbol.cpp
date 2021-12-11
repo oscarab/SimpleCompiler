@@ -16,6 +16,7 @@ bool Terminator::isEnd() const {
 
 NonTerminator::NonTerminator(String str) {
 	name = str;
+	setupReflect();
 }
 
 String NonTerminator::getName() const {
@@ -58,6 +59,52 @@ void NonTerminator::write(std::ostream& out, int level) {
 */
 void Terminator::write(std::ostream& out, int level) {
 	token.write(out, level, false);
+}
+
+void Terminator::setupReflect() { }
+
+/**
+ * @brief 储存反射需要的信息
+*/
+void NonTerminator::setupReflect() {
+	reflectMap["name"] = ReflectItem{ "string", (char*)&name };
+	reflectMap["production"] = ReflectItem{ "vector<SymbolChain>", (char*)&production };
+}
+
+/**
+ * @brief 反射获取成员变量
+ * @param fields_name 成员变量名字
+ * @return 成员变量的指针
+*/
+char* ReflectBase::getFields(std::string fields_name) {
+	return reflectMap[fields_name].data;
+}
+
+/**
+ * @brief 反射获取成员变量的类型
+ * @param fields_name 成员变量名字
+ * @return 类型
+*/
+std::string ReflectBase::getFieldType(std::string fields_name) {
+	return reflectMap[fields_name].type;
+}
+
+/**
+ * @brief 反射修改成员变量
+ * @param fields_name 成员变量名字
+ * @param data 要改为的数据
+*/
+void ReflectBase::setFields(std::string fields_name, char* data) {
+	ReflectItem item = reflectMap[fields_name];
+	char* place = item.data;
+	std::string type = item.type;
+
+	if (type == "int") {
+		*((int*)place) = *((int*)data);
+	}
+	else if (type == "string") {
+		*((std::string*)place) = *((std::string*)data);
+	}
 }
 
 bool Symbol::operator==(const Symbol& symbol) const {

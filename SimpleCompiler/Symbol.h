@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include "ReflectBase.h"
+#include "Token.h"
 
 class Symbol;
 class Token;
@@ -19,7 +21,7 @@ public:
 };
 
 // 终结符
-class Terminator : public Symbol{
+class Terminator : public Symbol, public ReflectBase {
 protected:
 	Token token;							// 终结符号
 public:
@@ -27,11 +29,12 @@ public:
 	Token getToken() const;					// 获取终结符Token
 	bool isEnd() const;
 
-	void write(std::ostream&, int);
+	virtual void write(std::ostream&, int);
+	virtual void setupReflect();
 };
 
 // 非终结符
-class NonTerminator : public Symbol {
+class NonTerminator : public Symbol, public ReflectBase {
 protected:
 	String name;							// 变元名字
 	std::vector<SymbolChain> production;	// 该变元作为左侧的产生式
@@ -42,7 +45,8 @@ public:
 	std::vector<SymbolChain>* getProductions();
 	void insertProduction(SymbolChain&);	// 插入新产生式
 
-	void write(std::ostream&, int);
+	virtual void write(std::ostream&, int);
+	virtual void setupReflect();
 };
 
 // Symbol的哈希函数模板定制

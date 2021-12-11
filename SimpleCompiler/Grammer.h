@@ -20,12 +20,13 @@ private:
 	SymbolChain symbols;				// 所有符号（包括终结符与非终结符）
 	StrMapInt strMapTable;				// 字符串与下标进行映射的表
 	SymMapInt symMapTable;				// 符号与下标进行映射的表
+	SymMapInt prodMapTable;				// 符号与产生式序号记录的下标进行映射的表
 	SymbolChain leftSymbols;			// 出现在产生式左部的符号
 
 	SymMapBool canEmpty;			// 可空的非终结符
 	SymMapFirst firstSet;			// 每个非终结符对应的First集合
 
-	std::vector<int> prodCounter;	// 产生式序号
+	std::vector<int> productCounter;	// 产生式序号
 
 public:
 	Grammer(const char*);						// 读取文法文件

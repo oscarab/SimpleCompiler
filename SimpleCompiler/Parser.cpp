@@ -14,6 +14,9 @@ extern std::string convertToString(Token& token);
 */
 Parser::Parser(const char* fileName) : machine(fileName) {
 	machine.create();
+
+	analyzer.generateSemanticAction(machine.getGrammer(), "Semantic.txt");
+	analyzer.distributeAttributeSymbols("Classify.txt");
 }
 
 /**
@@ -53,8 +56,6 @@ void Parser::createTable() {
 				action.action = true;
 				action.reduction = true;
 				action.product = item.getProduction();
-				int base = machine.getGrammer()->getProductionCount(action.product.symbolPoint);
-				action.go = base + action.product.productionIndex;
 				tuple[item.getForward()] = action;
 			}
 		}
@@ -121,6 +122,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 				pop_cnt = 0;
 			}
 			int reduce_cnt = pop_cnt;
+			analyzer.reduce(product.symbolPoint, grammer->getProductionCount(product.symbolPoint) + product.productionIndex, pop_cnt);
 
 			tree.construct(product.symbolPoint, pop_cnt);
 
@@ -152,6 +154,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 			tree.insert(read_sym);
 			symbolStack.push_back(read_sym);
 			stateStack.push_back(action.go);
+			analyzer.moveIn(read_sym);
 
 			if (step) {
 				std::cout << "Push the current symbol onto the symbol stack" << std::endl;

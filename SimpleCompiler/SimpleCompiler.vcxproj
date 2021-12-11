@@ -139,11 +139,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AttributeSymbol.cpp" />
     <ClCompile Include="Grammer.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Machine.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Scanner.cpp" />
+    <ClCompile Include="SemanticAction.cpp" />
+    <ClCompile Include="SemanticAnalyzer.cpp" />
     <ClCompile Include="SemanticsFunction.cpp" />
     <ClCompile Include="SimpleCompiler.cpp" />
     <ClCompile Include="Symbol.cpp" />
@@ -151,6 +154,7 @@
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AttributeSymbol.h" />
     <ClInclude Include="Grammer.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Machine.h" />
@@ -163,8 +167,10 @@
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="Classify.txt" />
     <Text Include="code.txt" />
     <Text Include="Grammer.txt" />
+    <Text Include="Semantic.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

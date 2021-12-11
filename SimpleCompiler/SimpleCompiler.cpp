@@ -3,6 +3,8 @@
 #include "Lexer.h"
 #include "Parser.h"
 
+#include "Symbol.h"
+
 void showHelp();
 
 int main(int argc, char* argv[]) {

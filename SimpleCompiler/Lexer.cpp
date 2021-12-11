@@ -101,6 +101,7 @@ bool Token::operator==(const Token& token) const {
 Lexer::Lexer(const char* fileName) {
 	codeReader = new Reader(fileName);
 	scanner = new Scanner();
+
 }
 
 /**

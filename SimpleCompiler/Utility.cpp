@@ -44,8 +44,8 @@ extern const std::unordered_map<std::string, Token> tokenConvert{
 	{"空", Token(TokenType::EPSILON, TokenAttribute::None)}
 };
 
-std::vector<std::string> idTable;	// 标识符表
-std::vector<double> constantTable;	// 常数表
+std::vector<std::string> idTable;	// 词法分析标识符表
+std::vector<double> constantTable;	// 词法分析常数表
 
 /**
  * @brief 输出TAB

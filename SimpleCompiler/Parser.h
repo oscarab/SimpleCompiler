@@ -3,6 +3,7 @@
 
 #include "Machine.h"
 #include "Lexer.h"
+#include "SemanticAnalyzer.h"
 
 struct Action;
 class SyntaxNode;
@@ -74,6 +75,7 @@ private:
 	Machine machine;					// 自动机
 	ParserTable table;					// 分析表
 	SyntaxTree tree;					// 语法树
+	SemanticAnalyzer analyzer;			// 语义分析器
 
 	std::vector<int> stateStack;		// 状态栈
 	std::vector<Symbol*> symbolStack;	// 符号栈

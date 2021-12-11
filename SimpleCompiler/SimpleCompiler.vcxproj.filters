@@ -66,6 +66,15 @@
     <ClCompile Include="SemanticsFunction.cpp">
       <Filter>源文件\Semantic</Filter>
     </ClCompile>
+    <ClCompile Include="SemanticAnalyzer.cpp">
+      <Filter>源文件\Semantic</Filter>
+    </ClCompile>
+    <ClCompile Include="SemanticAction.cpp">
+      <Filter>源文件\Semantic</Filter>
+    </ClCompile>
+    <ClCompile Include="AttributeSymbol.cpp">
+      <Filter>源文件\Semantic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lexer.h">
@@ -98,12 +107,21 @@
     <ClInclude Include="ReflectBase.h">
       <Filter>头文件\Reflect</Filter>
     </ClInclude>
+    <ClInclude Include="AttributeSymbol.h">
+      <Filter>头文件\Semantic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="code.txt">
       <Filter>资源文件</Filter>
     </Text>
     <Text Include="Grammer.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="Semantic.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="Classify.txt">
       <Filter>资源文件</Filter>
     </Text>
   </ItemGroup>
