@@ -3,6 +3,7 @@
 #include "Grammer.h"
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 Property packProperty(String& str) {
 	int point = str.find(".");
@@ -240,7 +241,9 @@ Symbol* SemanticAnalyzer::getSymbolFromStack(int index) {
  * @brief 输出中间代码
 */
 void SemanticAnalyzer::outputIntermediateCode() {
+	int p = 0;
 	for (Quaternion& q : intermediateCode) {
+		std::cout << (p++);
 		q.output();
 	}
 }
@@ -344,7 +347,7 @@ void Quaternion::setResult(String result) {
 }
 
 void Quaternion::output() {
-	std::cout << operate << " " << arg1 << " " << arg2 << " " << result << std::endl;
+	std::cout << std::setw(8) << operate << " " << std::setw(8) << arg1 << " " << std::setw(8) << arg2 << " " << std::setw(8) << result << std::endl;
 }
 
 /*********************************************************************/
