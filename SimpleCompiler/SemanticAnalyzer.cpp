@@ -236,6 +236,15 @@ Symbol* SemanticAnalyzer::getSymbolFromStack(int index) {
 	return stateStack[stateStack.size() - index];
 }
 
+/**
+ * @brief 输出中间代码
+*/
+void SemanticAnalyzer::outputIntermediateCode() {
+	for (Quaternion& q : intermediateCode) {
+		q.output();
+	}
+}
+
 void SemanticAnalyzer::moveIn(Symbol* symbol) {
 	stateStack.push_back(createAttributeSymbol(symbol));
 }
@@ -332,6 +341,10 @@ Quaternion::Quaternion(String _op, String _arg1, String _arg2, String _result) {
 
 void Quaternion::setResult(String result) {
 	this->result = result;
+}
+
+void Quaternion::output() {
+	std::cout << operate << " " << arg1 << " " << arg2 << " " << result << std::endl;
 }
 
 /*********************************************************************/

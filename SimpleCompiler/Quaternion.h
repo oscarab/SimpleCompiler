@@ -13,6 +13,7 @@ public:
 	Quaternion(std::string, std::string, std::string, std::string);
 
 	void setResult(std::string);
+	void output();
 };
 
 #endif // !QUATERNION_H

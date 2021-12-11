@@ -51,6 +51,7 @@ public:
 	Symbol* getSymbolFromStack(int index);
 	void moveIn(Symbol*);
 	void reduce(Symbol*, int, int);
+	void outputIntermediateCode();
 
 
 	/*************语义动作的实现*************/

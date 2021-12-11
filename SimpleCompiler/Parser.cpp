@@ -110,6 +110,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 		if (action.accept) {
 			std::cout << "Accept!" << std::endl;
 			out << "Accept!" << std::endl;
+			analyzer.outputIntermediateCode();
 			return true;
 		}
 		else if (action.reduction) {
