@@ -64,6 +64,15 @@ void lookupproc(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 }
 
 /**
+ * @brief 检查是否有main函数
+ * @param analyzer 语义分析器
+ * @param properties
+*/
+void checkmain(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	analyzer->checkmain();
+}
+
+/**
  * @brief 检查符号表，要求不出现重复定义
  * @param analyzer 语义分析器
  * @param properties
@@ -176,5 +185,6 @@ unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> funct
 	{"nextstat", nextstat},
 	{"notlookup", notlookup},
 	{"enterproc", enterproc},
-	{"lookupproc", lookupproc}
+	{"lookupproc", lookupproc},
+	{"checkmain", checkmain}
 };

@@ -32,6 +32,8 @@ public:
 	int find(String);
 	int findProc(String);
 	IDTable* getPrevious();
+
+	~IDTable();
 };
 
 class SemanticAnalyzer {
@@ -67,10 +69,13 @@ public:
 	String newtemp();
 	String lookup(String);
 	void lookupproc(String);
+	void checkmain();
 	void notlookup(String);
 	void backpatch(int, String);
 	void emite(String, String, String, String);
 	int nextstat(int);
+
+	~SemanticAnalyzer();
 };
 
 #endif // !SEMANTICANALYZER_H

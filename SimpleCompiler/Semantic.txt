@@ -1,5 +1,5 @@
 $$
-bktable();|$$
+checkmain();bktable();|$$
 $$|$$
 2.type=1.name;2.width=4;|2.type=1.name;2.width=0;
 enter(2.name,3.type,3.width);|$$
@@ -32,3 +32,4 @@ emit('par','-','-',1.place);|emit('par','-','-',3 .place);
 2.truelist=nextstat('1');mktable();emit('j','-','-','0');
 2.quad=nextstat('1');
 2.quad=nextstat('2');
+mktable();emit('j','-','-','0');

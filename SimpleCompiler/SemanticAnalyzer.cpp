@@ -99,6 +99,12 @@ void IDTable::addNext(IDTable* next_table) {
 	next.push_back(next_table);
 }
 
+IDTable::~IDTable() {
+	for (IDTable* n : next) {
+		delete n;
+	}
+}
+
 /*********************************************************************/
 
 
@@ -347,6 +353,14 @@ void SemanticAnalyzer::lookupproc(String name) {
 	exit(0);
 }
 
+void SemanticAnalyzer::checkmain() {
+	int ind = nowTable->findProc("main");
+	if (ind == -1) {
+		(*out) << "[ERROR] no entry defined";
+		exit(0);
+	}
+}
+
 void SemanticAnalyzer::notlookup(String name) {
 	IDTable* p = nowTable;
 
@@ -362,6 +376,9 @@ void SemanticAnalyzer::enter(String name, String type, int width) {
 
 void SemanticAnalyzer::enterproc(String name, String type, String arg) {
 	nowTable->insertProc(name, type, arg == "1");
+	if (arg == "0") {
+		backpatch(0, std::to_string(nextstat(1)));
+	}
 }
 
 void SemanticAnalyzer::mktable() {
@@ -374,6 +391,10 @@ void SemanticAnalyzer::mktable() {
 
 void SemanticAnalyzer::bktable() {
 	nowTable = nowTable->getPrevious();
+}
+
+SemanticAnalyzer::~SemanticAnalyzer() {
+	delete nowTable;
 }
 
 /*********************************************************************/
