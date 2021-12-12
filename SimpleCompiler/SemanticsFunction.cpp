@@ -42,7 +42,7 @@ void newtemp(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 }
 
 /**
- * @brief 检查符号表，看此符号是否被定义了
+ * @brief 检查符号表，看此符号是否被声明了
  * @param analyzer 语义分析器
  * @param properties 存放该符号的相对地址
 */
@@ -51,6 +51,16 @@ void lookup(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	string place = analyzer->lookup(name);
 	properties.push_back(Property{ 0, place });
 	properties.push_back(Property{ 0, "" });
+}
+
+/**
+ * @brief 检查符号表，看此过程是否被声明了
+ * @param analyzer 语义分析器
+ * @param properties
+*/
+void lookupproc(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	string name = unwrap(analyzer, properties[0]);
+	analyzer->lookupproc(name);
 }
 
 /**
@@ -82,6 +92,18 @@ void enter(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	}
 
 	analyzer->enter(name, type, width);
+}
+
+/**
+ * @brief 往符号表添加新过程
+ * @param analyzer 语义分析器
+ * @param properties
+*/
+void enterproc(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	string name = unwrap(analyzer, properties[0]);
+	string type = unwrap(analyzer, properties[1]);
+	string arg = unwrap(analyzer, properties[2]);
+	analyzer->enterproc(name, type, arg);
 }
 
 /**
@@ -152,5 +174,7 @@ unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> funct
 	{"bktable", bktable},
 	{"emit", emit},
 	{"nextstat", nextstat},
-	{"notlookup", notlookup}
+	{"notlookup", notlookup},
+	{"enterproc", enterproc},
+	{"lookupproc", lookupproc}
 };

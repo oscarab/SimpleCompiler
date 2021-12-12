@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     bool tokens_out = false, tree_out = false, table_out = false, analysis_step = false, analysis_out = false;
-    for (int i = 1; i < argc - 2; i++) {
+    for (int i = 1; i < argc - 1; i++) {
         if (std::strcmp(argv[i], "--help") == 0) {
             showHelp();
             return 0;
@@ -37,10 +37,9 @@ int main(int argc, char* argv[]) {
     }
 
     char* code_file = argv[argc - 1];
-    char* grammer_file = argv[argc - 2];
 
     // 创建LR(1)分析表
-    Parser parser(grammer_file);
+    Parser parser("Grammer.txt");
     parser.createTable();
 
     // 判断是否输出分析表到文件
@@ -53,13 +52,18 @@ int main(int argc, char* argv[]) {
     Lexical::Lexer lexer(code_file);
 
     std::ofstream fout("analysis.txt");
-    bool sucess = parser.analysis(&lexer, fout, analysis_step);
+    std::ofstream code_out("IntermediateCode.txt");
+    bool sucess = parser.analysis(&lexer, fout, code_out, analysis_step);
     fout.close();
 
     // 判断是否输出所有单词
     if (tokens_out && sucess) {
         std::ofstream fout("tokens.txt");
         lexer.writeTokens(fout);
+        fout.close();
+    }
+    else {
+        std::ofstream fout("tokens.txt", std::ios::out);
         fout.close();
     }
 
@@ -69,9 +73,13 @@ int main(int argc, char* argv[]) {
         parser.getTree()->getHead()->write(fout, 0, ' ');
         fout.close();
     }
+    else {
+        std::ofstream fout("tree.txt", std::ios::out);
+        fout.close();
+    }
 
     std::cout << "finish!";
-    return 0;
+    return sucess;
 }
 
 void showHelp() {
@@ -79,7 +87,7 @@ void showHelp() {
     cout << "Welcome to use SimpleCompiler!" << endl << endl;
 
     cout << "USAGE:" << endl;
-    cout << "scc.exe [options] <input grammer file> <input code file>" << endl << endl;
+    cout << "scc.exe [options] <input code file>" << endl << endl;
 
     cout << "OPTIONS:" << endl;
     cout << left << setw(10) << "--help"  << "- Show help" << endl;

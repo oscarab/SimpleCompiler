@@ -83,8 +83,8 @@ private:
 public:
 	Parser(const char*);
 
-	void createTable();										// 建立分析表
-	bool analysis(Lexical::Lexer*, std::ostream&, bool);	// 开始语法分析
+	void createTable();													// 建立分析表
+	bool analysis(Lexical::Lexer*, std::ostream&, std::ostream&, bool);	// 开始语法分析
 
 	SyntaxTree* getTree();									// 获取语法树
 	void writeTable(std::ostream&);							// 输出分析表

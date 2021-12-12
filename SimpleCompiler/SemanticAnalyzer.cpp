@@ -50,8 +50,22 @@ IDTable::IDTable(IDTable* pre) {
  * @param w 宽度
 */
 void IDTable::insert(String name, String type, int w) {
-	table[name] = ValTable{ type, width };
+	table[name] = ValTable{ type, width, false };
 	width += w;
+}
+
+/**
+ * @brief 往符号表中插入新过程标识符
+ * @param name 名字
+ * @param type 返回类型
+*/
+void IDTable::insertProc(String name, String type, bool isOuter) {
+	if (isOuter) {
+		table[name] = ValTable{ type, int(next.size() - 1), true };
+	}
+	else {
+		table[name] = ValTable{ type, -1, true };
+	}
 }
 
 /**
@@ -62,6 +76,18 @@ void IDTable::insert(String name, String type, int w) {
 int IDTable::find(String name) {
 	auto p = table.find(name);
 	if (p == table.end()) return -1;
+	return (*p).second.offset;
+}
+
+/**
+ * @brief 寻找函数过程
+ * @param name 名字
+ * @return -100若没找到，若找到返回其对应的next指针位置
+*/
+int IDTable::findProc(String name) {
+	auto p = table.find(name);
+	if (p == table.end()) return -1;
+	if (!(*p).second.isFunc) return -1;
 	return (*p).second.offset;
 }
 
@@ -225,6 +251,10 @@ Symbol* SemanticAnalyzer::createAttributeSymbol(Symbol* symbol) {
 	}
 }
 
+void SemanticAnalyzer::setOutStream(std::ostream& _out) {
+	out = &_out;
+}
+
 /**
  * @brief 按偏移量从符号栈中取文法符号
  * @param index 偏移量
@@ -240,11 +270,12 @@ Symbol* SemanticAnalyzer::getSymbolFromStack(int index) {
 /**
  * @brief 输出中间代码
 */
-void SemanticAnalyzer::outputIntermediateCode() {
+void SemanticAnalyzer::outputIntermediateCode(std::ostream& out) {
 	int p = 0;
 	for (Quaternion& q : intermediateCode) {
-		std::cout << (p++);
-		q.output();
+		out << std::setw(5) << p;
+		p++;
+		q.output(out);
 	}
 }
 
@@ -262,6 +293,7 @@ void SemanticAnalyzer::reduce(Symbol* symbol, int index, int count) {
 	}
 
 	while (count--) {
+		delete stateStack.back();
 		stateStack.pop_back();
 	}
 	stateStack.push_back(reductionResult);
@@ -296,7 +328,22 @@ String SemanticAnalyzer::lookup(String name) {
 		p = p->getPrevious();
 	}
 
-	std::cout << "[错误] 未声明的标识符" << name;
+	(*out) << "[ERROR] undeclared identifier: " << name;
+	exit(0);
+}
+
+void SemanticAnalyzer::lookupproc(String name) {
+	IDTable* p = nowTable;
+
+	while (p) {
+		int place = p->findProc(name);
+		if (place != -1) {
+			return;
+		}
+		p = p->getPrevious();
+	}
+
+	(*out) << "[ERROR] undeclared identifier: " << name;
 	exit(0);
 }
 
@@ -305,17 +352,16 @@ void SemanticAnalyzer::notlookup(String name) {
 
 	int place = p->find(name);
 	if (place != -1) {
-		std::cout << "[错误] 重定义的标识符" << name;
+		(*out) << "[ERROR] identifier redefinition: " << name;
 		exit(0);
 	}
 }
 void SemanticAnalyzer::enter(String name, String type, int width) {
-	if (type != "func") {
-		nowTable->insert(name, type, width);
-	}
-	else {
-		nowTable->insert(name, type, 0);
-	}
+	nowTable->insert(name, type, width);
+}
+
+void SemanticAnalyzer::enterproc(String name, String type, String arg) {
+	nowTable->insertProc(name, type, arg == "1");
 }
 
 void SemanticAnalyzer::mktable() {
@@ -346,8 +392,8 @@ void Quaternion::setResult(String result) {
 	this->result = result;
 }
 
-void Quaternion::output() {
-	std::cout << std::setw(8) << operate << " " << std::setw(8) << arg1 << " " << std::setw(8) << arg2 << " " << std::setw(8) << result << std::endl;
+void Quaternion::output(std::ostream& out) {
+	out << std::setw(8) << operate << " " << std::setw(8) << arg1 << " " << std::setw(8) << arg2 << " " << std::setw(8) << result << std::endl;
 }
 
 /*********************************************************************/

@@ -2,6 +2,7 @@
 #define QUATERNION_H
 
 #include <string>
+#include <iostream>
 
 class Quaternion {
 private:
@@ -13,7 +14,7 @@ public:
 	Quaternion(std::string, std::string, std::string, std::string);
 
 	void setResult(std::string);
-	void output();
+	void output(std::ostream&);
 };
 
 #endif // !QUATERNION_H

@@ -69,7 +69,7 @@ void Parser::createTable() {
  * @param lexer 词法分析器
  * @return 是否分析成功
 */
-bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
+bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& code_out, bool step) {
 	// 获取Token流
 	if (!lexer->run()) return false;
 	std::vector<Token>* tokens = lexer->getTokens();
@@ -77,6 +77,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 	Grammer* grammer = machine.getGrammer();
 	stateStack.push_back(0);
 	symbolStack.push_back(grammer->getSymbol(String("#")));
+	analyzer.setOutStream(out);
 
 	for (int i = 0; i < len; i++) {
 		int nowState = stateStack[stateStack.size() - 1];
@@ -110,7 +111,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, bool step) {
 		if (action.accept) {
 			std::cout << "Accept!" << std::endl;
 			out << "Accept!" << std::endl;
-			analyzer.outputIntermediateCode();
+			analyzer.outputIntermediateCode(code_out);
 			return true;
 		}
 		else if (action.reduction) {

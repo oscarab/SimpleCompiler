@@ -3,8 +3,8 @@ bktable();|$$
 $$|$$
 2.type=1.name;2.width=4;|2.type=1.name;2.width=0;
 enter(2.name,3.type,3.width);|$$
-bktable();enter(2.place,'func',0);
-enter(5.name,'func',0);7.place=5.name;
+bktable();enterproc(2.place,2.type,'1');
+enterproc(5.name,6.type,'0');7.place=5.name;7.type=6.type;
 $$|$$|$$|$$
 notlookup(1.name);enter(1.name,2.type,2.width);
 $$|$$
@@ -26,7 +26,7 @@ bktable();backpatch(5.truelist,3.quad);backpatch(5.falselist,1.quad);|bktable();
 4.place=newtemp();emit('+',3.place,1.place,4.place);|4.place=newtemp();emit('-',3.place,1.place,4.place);|4.place=newtemp();emit('+',3.place,1.place,4.place);|4.place=newtemp();emit('-',3.place,1.place,4.place);
 2.place=1.place;|2.place=1.place;
 4.place=newtemp();emit('*',3.place,1.place,4.place);|4.place=newtemp();emit('/',3.place,1.place,4.place);|4.place=newtemp();emit('*',3.place,1.place,4.place);|4.place=newtemp();emit('/',3.place,1.place,4.place);
-2.place=1.name;|4.place=2.place;|emit('call','-','-',4.name);5.place=newtemp();emit(':=','$v0','-',5.place);|emit('call','-','-',3.name);4.place=newtemp();emit(':=','$v0','-',4.place);|1.place=lookup(1.name);2.place=1.place;
+2.place=1.name;|4.place=2.place;|lookupproc(4.name);emit('call','-','-',4.name);5.place=newtemp();emit(':=','$v0','-',5.place);|lookupproc(3.name);emit('call','-','-',3.name);4.place=newtemp();emit(':=','$v0','-',4.place);|1.place=lookup(1.name);2.place=1.place;
 emit('par','-','-',1.place);|emit('par','-','-',3 .place);
 2.quad=nextstat('1');mktable();
 2.truelist=nextstat('1');mktable();emit('j','-','-','0');
