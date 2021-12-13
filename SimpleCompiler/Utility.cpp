@@ -7,8 +7,8 @@
 
 extern const char* TokenTypeStr[] = { "KEY_WORD", "ID", "OPERATOR", "CONSTANT",
 							"BOUNDARY", "BRACKET" , "END"};
-extern const char* TokenAttrStr[] = { "$int", "$void", "$if", "$else", "$while",
-							"$return", "+", "-", "*", "/", "=", "==",
+extern const char* TokenAttrStr[] = { "int", "void", "if", "else", "while",
+							"return", "+", "-", "*", "/", "=", "==",
 							">", "<", ">=", "<=", "!=", "&&", "||", ",", ";",
 							"{", "}", "(", ")", "CONSTANT", "ID", "NONE"};
 

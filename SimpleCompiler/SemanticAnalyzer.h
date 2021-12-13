@@ -18,12 +18,12 @@ struct ValTable {
 
 class IDTable {
 private:
-	IDTable* previous;
-	int width;
+	IDTable* previous;			// 前一个符号表
+	int width;					// 符号表宽度
 
 	std::unordered_map<String, ValTable> table;
 
-	std::vector<IDTable*> next;
+	std::vector<IDTable*> next;	// 下张符号表
 public:
 	IDTable(IDTable*);
 	void insert(String, String, int);
@@ -31,6 +31,7 @@ public:
 	void addNext(IDTable*);
 	int find(String);
 	int findProc(String);
+	String getType(String);
 	IDTable* getPrevious();
 
 	~IDTable();
@@ -74,6 +75,8 @@ public:
 	void backpatch(int, String);
 	void emite(String, String, String, String);
 	int nextstat(int);
+	String lookuptype(String);
+	void checktype(String, String);
 
 	~SemanticAnalyzer();
 };

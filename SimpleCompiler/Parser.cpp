@@ -71,7 +71,7 @@ void Parser::createTable() {
 */
 bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& code_out, bool step) {
 	// »ñÈ¡TokenÁ÷
-	if (!lexer->run()) return false;
+	if (!lexer->run(out)) return false;
 	std::vector<Token>* tokens = lexer->getTokens();
 	int len = tokens->size();
 	Grammer* grammer = machine.getGrammer();

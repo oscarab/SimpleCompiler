@@ -49,12 +49,13 @@ int main(int argc, char* argv[]) {
         fout.close();
     }
 
+    std::ofstream fout("analysis.txt");
     Lexical::Lexer lexer(code_file);
 
-    std::ofstream fout("analysis.txt");
     std::ofstream code_out("IntermediateCode.txt");
     bool sucess = parser.analysis(&lexer, fout, code_out, analysis_step);
     fout.close();
+    code_out.close();
 
     // 判断是否输出所有单词
     if (tokens_out && sucess) {

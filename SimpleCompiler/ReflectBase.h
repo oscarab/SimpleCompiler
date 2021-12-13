@@ -14,10 +14,10 @@ class ReflectBase {
 protected:
 	std::unordered_map<std::string, ReflectItem> reflectMap;
 public:
-	virtual void setupReflect() = 0;
-	char* getFields(std::string);
-	std::string getFieldType(std::string);
-	void setFields(std::string, char*);
+	virtual void setupReflect() = 0;		// 建立反射需要的信息
+	char* getFields(std::string);			// 获取成员变量
+	std::string getFieldType(std::string);	// 获取成员变量的类型
+	void setFields(std::string, char*);		// 修改成员变量
 };
 
 #endif // !REFLECTBASE_H

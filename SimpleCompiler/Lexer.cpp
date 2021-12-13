@@ -106,8 +106,10 @@ Lexer::Lexer(const char* fileName) {
 
 /**
  * @brief 运行词法分析
+ * @param out 文件输出
+ * @return 是否成功
 */
-bool Lexer::run() {
+bool Lexer::run(std::ostream& out) {
 	scanner->setBuffer(codeReader->getBuffer());
 	scanner->setEndPoint(codeReader->getReadin());
 	scanner->setIsComplete(codeReader->getReadin() < BLOCK_SIZE);
@@ -131,6 +133,7 @@ bool Lexer::run() {
 		else if (token.getType() == TokenType::FAIL) {
 			// 词法分析遭遇错误
 			std::cout << "lexical error!" << std::endl;
+			out << "lexical error!" << std::endl;
 			return false;
 		}
 		else if (token.getType() == TokenType::COMPLETE) {

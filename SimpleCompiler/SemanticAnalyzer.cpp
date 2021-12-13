@@ -91,6 +91,17 @@ int IDTable::findProc(String name) {
 	return (*p).second.offset;
 }
 
+/**
+ * @brief 获取标识符的类型
+ * @param name 名字
+ * @return 类型
+*/
+String IDTable::getType(String name) {
+	auto p = table.find(name);
+	if (p == table.end()) return "";
+	return (*p).second.type;
+}
+
 IDTable* IDTable::getPrevious() { 
 	return previous; 
 }
@@ -334,6 +345,7 @@ String SemanticAnalyzer::lookup(String name) {
 		p = p->getPrevious();
 	}
 
+	std::cout << "[ERROR] undeclared identifier: " << name;
 	(*out) << "[ERROR] undeclared identifier: " << name;
 	exit(0);
 }
@@ -349,6 +361,7 @@ void SemanticAnalyzer::lookupproc(String name) {
 		p = p->getPrevious();
 	}
 
+	std::cout << "[ERROR] undeclared identifier: " << name;
 	(*out) << "[ERROR] undeclared identifier: " << name;
 	exit(0);
 }
@@ -356,6 +369,7 @@ void SemanticAnalyzer::lookupproc(String name) {
 void SemanticAnalyzer::checkmain() {
 	int ind = nowTable->findProc("main");
 	if (ind == -1) {
+		std::cout << "[ERROR] no entry defined";
 		(*out) << "[ERROR] no entry defined";
 		exit(0);
 	}
@@ -366,6 +380,7 @@ void SemanticAnalyzer::notlookup(String name) {
 
 	int place = p->find(name);
 	if (place != -1) {
+		std::cout << "[ERROR] identifier redefinition: " << name;
 		(*out) << "[ERROR] identifier redefinition: " << name;
 		exit(0);
 	}
@@ -391,6 +406,30 @@ void SemanticAnalyzer::mktable() {
 
 void SemanticAnalyzer::bktable() {
 	nowTable = nowTable->getPrevious();
+}
+
+String SemanticAnalyzer::lookuptype(String name) {
+	IDTable* p = nowTable;
+
+	while (p) {
+		String type = p->getType(name);
+		if (type != "") {
+			return type;
+		}
+		p = p->getPrevious();
+	}
+
+	std::cout << "[ERROR] undeclared identifier: " << name;
+	(*out) << "[ERROR] undeclared identifier: " << name;
+	exit(0);
+}
+
+void SemanticAnalyzer::checktype(String type1, String type2) {
+	if (type1 == "void" || type2 == "void") {
+		std::cout << "[ERROR] \"void\" can not be used in expression ";
+		(*out) << "[ERROR] \"void\" can not be used in expression ";
+		exit(0);
+	}
 }
 
 SemanticAnalyzer::~SemanticAnalyzer() {

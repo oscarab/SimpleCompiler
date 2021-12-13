@@ -174,6 +174,30 @@ void nextstat(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	properties.push_back(Property{ 1, "" });
 }
 
+/**
+ * @brief 查找该变量或函数的类型
+ * @param analyzer 语义分析器
+ * @param properties 类型
+*/
+void lookuptype(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	string name = unwrap(analyzer, properties[0]);
+
+	properties.push_back(Property{ 0, analyzer->lookuptype(name) });
+	properties.push_back(Property{ 0, "" });
+}
+
+/**
+ * @brief 检查类型是否可以运算
+ * @param analyzer 语义分析器
+ * @param properties
+*/
+void checktype(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	string t1 = unwrap(analyzer, properties[0]);
+	string t2 = unwrap(analyzer, properties[1]);
+
+	analyzer->checktype(t1, t2);
+}
+
 unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPoint = {
 	{"newtemp", newtemp},
 	{"lookup", lookup},
@@ -186,5 +210,7 @@ unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> funct
 	{"notlookup", notlookup},
 	{"enterproc", enterproc},
 	{"lookupproc", lookupproc},
-	{"checkmain", checkmain}
+	{"checkmain", checkmain},
+	{"lookuptype", lookuptype},
+	{"checktype", checktype}
 };

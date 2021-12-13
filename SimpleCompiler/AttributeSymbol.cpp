@@ -16,7 +16,7 @@ LeafSymbol::LeafSymbol(Token token) : Terminator(token){
 		name = TokenAttrStr[(int)token.getAttribute()];
 	}
 	else if (token.getType() == TokenType::CONSTANT) {
-		name = std::to_string(constantTable[token.getIndex()]);
+		name = std::to_string(int(constantTable[token.getIndex()]));
 	}
 }
 
