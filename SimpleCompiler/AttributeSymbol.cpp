@@ -16,13 +16,22 @@ LeafSymbol::LeafSymbol(Token token) : Terminator(token){
 		name = TokenAttrStr[(int)token.getAttribute()];
 	}
 	else if (token.getType() == TokenType::CONSTANT) {
-		name = std::to_string(int(constantTable[token.getIndex()]));
+		double number = constantTable[token.getIndex()];
+		if (number - int(number) == 0) {
+			name = std::to_string(int(number));
+			type = "int";
+		}
+		else {
+			name = std::to_string(float(number));
+			type = "float";
+		}
 	}
 }
 
 void LeafSymbol::setupReflect() {
 	reflectMap["name"] = ReflectItem{ "string", (char*)&name };
 	reflectMap["place"] = ReflectItem{ "string", (char*)&place };
+	reflectMap["type"] = ReflectItem{ "string", (char*)&type };
 }
 
 void VariableSymbol::setupReflect() {

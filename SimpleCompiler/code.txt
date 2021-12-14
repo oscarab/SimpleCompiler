@@ -34,6 +34,7 @@ void show() {
 
 int main() {
 	int a;
+	float b;
 	a = program(1, 2, 3);
 	show();
 	return 1;

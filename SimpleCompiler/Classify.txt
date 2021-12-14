@@ -27,7 +27,7 @@ if语句 EpsilonSymbol
 项 VariableSymbol
 因子列表 VariableSymbol
 因子 VariableSymbol
-实参列表 EpsilonSymbol
+实参列表 VariableSymbol
 M EpsilonSymbol
 N EpsilonSymbol
 B EpsilonSymbol

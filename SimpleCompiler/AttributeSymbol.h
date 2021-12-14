@@ -7,6 +7,7 @@ class LeafSymbol : public Terminator {
 private:
 	String name;
 	String place;
+	String type;
 public:
 	LeafSymbol(Token);
 	virtual void setupReflect();
@@ -18,7 +19,7 @@ private:
 	String type;
 	int width;
 public:
-	VariableSymbol(String name) : NonTerminator(name) {}
+	VariableSymbol(String name) : NonTerminator(name) { place = ""; }
 	virtual void setupReflect();
 };
 

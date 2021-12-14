@@ -7,13 +7,14 @@
 
 extern const char* TokenTypeStr[] = { "KEY_WORD", "ID", "OPERATOR", "CONSTANT",
 							"BOUNDARY", "BRACKET" , "END"};
-extern const char* TokenAttrStr[] = { "int", "void", "if", "else", "while",
+extern const char* TokenAttrStr[] = { "int", "float", "void", "if", "else", "while",
 							"return", "+", "-", "*", "/", "=", "==",
 							">", "<", ">=", "<=", "!=", "&&", "||", ",", ";",
 							"{", "}", "(", ")", "CONSTANT", "ID", "NONE"};
 
 extern const std::unordered_map<std::string, Token> tokenConvert{
 	{"int", Token(TokenType::KEY_WORD, TokenAttribute::_int)},
+	{"float", Token(TokenType::KEY_WORD, TokenAttribute::_float)},
 	{"void", Token(TokenType::KEY_WORD, TokenAttribute::_void)},
 	{"if", Token(TokenType::KEY_WORD, TokenAttribute::_if)},
 	{"else", Token(TokenType::KEY_WORD, TokenAttribute::_else)},

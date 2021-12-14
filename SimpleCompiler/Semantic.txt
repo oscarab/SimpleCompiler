@@ -1,20 +1,20 @@
 $$
 checkmain();bktable();|$$
 $$|$$
-2.type=1.name;2.width=4;|2.type=1.name;2.width=0;
-enter(2.name,3.type,3.width);|$$
-bktable();enterproc(2.place,2.type,'1');
-enterproc(5.name,6.type,'0');7.place=5.name;7.type=6.type;
-$$|$$|$$|$$
-notlookup(1.name);enter(1.name,2.type,2.width);
-$$|$$
+2.type=1.name;2.width=4;|2.type=1.name;2.width=4;
+notlookup(2.name);enter(2.name,3.type,3.width);|$$
+enterproc(2.place,2.type,'1');
+enterproc(5.name,6.type,'0');7.place=5.name;7.type=6.type;|enterproc(5.name,6.name,'0');7.place=5.name;7.type=6.name;
+addpara(1.type);|addpara(3.type);|$$|$$
+notlookup(1.name);enter(1.name,2.type,2.width);3.type=2.type;
+bktable();|bktable();
 $$|$$
 $$|$$|$$|$$|$$|$$
 notlookup(2.name);enter(2.name,3.type,3.width);
-4.place=lookup(4.name);emit(':=',2.place,'-',4.place);
+4.place=lookup(4.name);4.type=lookuptype(4.name);checktype(4.type,2.type);emit(':=',2.place,'-',4.place);
 emit(':=',2.place,'-','$v0');emit('ret','-','-','-');|emit(':=','-','-','$v0');emit('ret','-','-','-');
-bktable();emit('j','-','-',8.quad);backpatch(5.truelist,3.quad);backpatch(5.falselist,1.quad);
-bktable();backpatch(5.truelist,3.quad);backpatch(5.falselist,1.quad);|bktable();backpatch(8.truelist,6.quad);backpatch(8.falselist,3.quad);backpatch(3.truelist,1.quad);
+emit('j','-','-',8.quad);backpatch(5.truelist,3.quad);backpatch(5.falselist,1.quad);
+backpatch(5.truelist,3.quad);backpatch(5.falselist,1.quad);|backpatch(8.truelist,6.quad);backpatch(8.falselist,3.quad);backpatch(3.truelist,1.quad);
 2.op=1.name;|2.op=1.name;|2.op=1.name;|2.op=1.name;|2.op=1.name;|2.op=1.name;
 2.op=1.name;|2.op=1.name;
 2.truelist=nextstat('1');2.falselist=nextstat('2');emit('jnz',1.place,'-','0');emit('j','-','-','0');
@@ -26,8 +26,8 @@ checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit(2.op,3.place,1.pla
 checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('+',3.place,1.place,4.place);|checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('-',3.place,1.place,4.place);|checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('+',3.place,1.place,4.place);|checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('-',3.place,1.place,4.place);
 2.place=1.place;2.type=1.type;|2.place=1.place;2.type=1.type;
 checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('*',3.place,1.place,4.place);|checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('/',3.place,1.place,4.place);|checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('*',3.place,1.place,4.place);|checktype(3.type,1.type);4.place=newtemp();4.type=1.type;emit('/',3.place,1.place,4.place);
-2.place=1.name;2.type='int';|4.place=2.place;4.type=2.type;|lookupproc(4.name);5.type=lookuptype(4.name);emit('call','-','-',4.name);5.place=newtemp();emit(':=','$v0','-',5.place);|lookupproc(3.name);5.type=lookuptype(3.name);emit('call','-','-',3.name);4.place=newtemp();emit(':=','$v0','-',4.place);|1.place=lookup(1.name);2.type=lookuptype(1.name);2.place=1.place;
-emit('par','-','-',1.place);|emit('par','-','-',3 .place);
+2.place=1.name;2.type=1.type;|4.place=2.place;4.type=2.type;|lookupproc(4.name,2.place);5.type=lookuptype(4.name);emit('call','-','-',4.name);5.place=newtemp();emit(':=','$v0','-',5.place);|lookupproc(3.name);5.type=lookuptype(3.name);emit('call','-','-',3.name);4.place=newtemp();emit(':=','$v0','-',4.place);|1.place=lookup(1.name);2.type=lookuptype(1.name);2.place=1.place;
+emit('par','-','-',1.place);addarg(2.place,1.type);|emit('par','-','-',3 .place);addarg(1.place,3.type);4.place=1.place;
 2.quad=nextstat('1');mktable();
 2.truelist=nextstat('1');mktable();emit('j','-','-','0');
 2.quad=nextstat('1');

@@ -21,7 +21,7 @@ enum class TokenType {
 
 // µ•¥  Ù–‘
 enum class TokenAttribute {
-	_int, _void, _if, _else, _while, _return,
+	_int, _float, _void, _if, _else, _while, _return,
 	Add, Minus, Multiply, Divide, Assign, Equal, Greater, Less, Gequal, Lequal, Nequal,
 	AND, OR,
 	Comma, Semicolon,

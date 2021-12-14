@@ -86,8 +86,8 @@ int IDTable::find(String name) {
 */
 int IDTable::findProc(String name) {
 	auto p = table.find(name);
-	if (p == table.end()) return -1;
-	if (!(*p).second.isFunc) return -1;
+	if (p == table.end()) return -100;
+	if (!(*p).second.isFunc) return -100;
 	return (*p).second.offset;
 }
 
@@ -106,8 +106,35 @@ IDTable* IDTable::getPrevious() {
 	return previous; 
 }
 
+IDTable* IDTable::getNext(int num) {
+	return next[num];
+}
+
 void IDTable::addNext(IDTable* next_table) {
 	next.push_back(next_table);
+}
+
+void IDTable::addParameter(String type) {
+	parameters.push_back(type);
+}
+
+bool IDTable::checkParameters(String type) {
+	std::vector<String> args;
+	int start = 0;
+	int end = type.find(";", start);
+	while (end != type.npos) {
+		args.push_back(type.substr(start, end - start));
+		start = end + 1;
+		if (start >= type.size()) break;
+		end = type.find(";", start);
+	}
+	int size = args.size();
+	if (parameters.size() != size) return false;
+
+	for (int i = 0; i < size; i++) {
+		if (parameters[i] != args[i]) return false;
+	}
+	return true;
 }
 
 IDTable::~IDTable() {
@@ -350,12 +377,26 @@ String SemanticAnalyzer::lookup(String name) {
 	exit(0);
 }
 
-void SemanticAnalyzer::lookupproc(String name) {
+void SemanticAnalyzer::lookupproc(String name, String type) {
 	IDTable* p = nowTable;
 
 	while (p) {
 		int place = p->findProc(name);
-		if (place != -1) {
+		if (place != -100) {
+
+			bool type_check = false;
+			if (place == -1) {
+				type_check = p->checkParameters(type);
+			}
+			else {
+				type_check = p->getNext(place)->checkParameters(type);
+			}
+			if (!type_check) {
+				std::cout << "[ERROR] parameter type mismatch: " << name;
+				(*out) << "[ERROR] parameter type mismatch: " << name;
+				exit(0);
+			}
+				
 			return;
 		}
 		p = p->getPrevious();
@@ -368,7 +409,7 @@ void SemanticAnalyzer::lookupproc(String name) {
 
 void SemanticAnalyzer::checkmain() {
 	int ind = nowTable->findProc("main");
-	if (ind == -1) {
+	if (ind == -100) {
 		std::cout << "[ERROR] no entry defined";
 		(*out) << "[ERROR] no entry defined";
 		exit(0);
@@ -391,7 +432,7 @@ void SemanticAnalyzer::enter(String name, String type, int width) {
 
 void SemanticAnalyzer::enterproc(String name, String type, String arg) {
 	nowTable->insertProc(name, type, arg == "1");
-	if (arg == "0") {
+	if (arg == "0" && name == "main") {
 		backpatch(0, std::to_string(nextstat(1)));
 	}
 }
@@ -425,11 +466,15 @@ String SemanticAnalyzer::lookuptype(String name) {
 }
 
 void SemanticAnalyzer::checktype(String type1, String type2) {
-	if (type1 == "void" || type2 == "void") {
-		std::cout << "[ERROR] \"void\" can not be used in expression ";
-		(*out) << "[ERROR] \"void\" can not be used in expression ";
+	if (type1 == "void" || type2 == "void" || type1 != type2) {
+		std::cout << "[ERROR] error type: " << type1 << " and " << type2;
+		(*out) << "[ERROR] error type: " << type1 << " and " << type2;
 		exit(0);
 	}
+}
+
+void SemanticAnalyzer::addpara(String type) {
+	nowTable->addParameter(type);
 }
 
 SemanticAnalyzer::~SemanticAnalyzer() {

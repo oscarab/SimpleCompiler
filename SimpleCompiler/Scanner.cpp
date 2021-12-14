@@ -96,6 +96,8 @@ TokenAttribute Scanner::reserve() {
 
 	if (str == "int")
 		return TokenAttribute::_int;
+	else if (str == "float")
+		return TokenAttribute::_float;
 	else if (str == "void")
 		return TokenAttribute::_void;
 	else if (str == "if")

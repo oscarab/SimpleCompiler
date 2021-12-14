@@ -60,7 +60,8 @@ void lookup(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 */
 void lookupproc(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	string name = unwrap(analyzer, properties[0]);
-	analyzer->lookupproc(name);
+	string type = properties.size() > 1 ? unwrap(analyzer, properties[1]) : "";
+	analyzer->lookupproc(name, type);
 }
 
 /**
@@ -198,6 +199,31 @@ void checktype(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	analyzer->checktype(t1, t2);
 }
 
+/**
+ * @brief 保存下形式参数
+ * @param analyzer 语义分析器
+ * @param properties
+*/
+void addpara(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	string t = unwrap(analyzer, properties[0]);
+
+	analyzer->addpara(t);
+}
+
+/**
+ * @brief 保存下实参
+ * @param analyzer 语义分析器
+ * @param properties
+*/
+void addarg(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	NonTerminator* des = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[0].index));
+	NonTerminator* src = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[1].index));
+
+	String str1 = *(String*)src->getFields(properties[1].property);
+	String str2 = *(String*)des->getFields(properties[0].property);
+	des->setFields(properties[0].property, (char*)&(str2 + str1 + ";"));
+}
+
 unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPoint = {
 	{"newtemp", newtemp},
 	{"lookup", lookup},
@@ -212,5 +238,7 @@ unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> funct
 	{"lookupproc", lookupproc},
 	{"checkmain", checkmain},
 	{"lookuptype", lookuptype},
-	{"checktype", checktype}
+	{"checktype", checktype},
+	{"addpara", addpara},
+	{"addarg", addarg}
 };
