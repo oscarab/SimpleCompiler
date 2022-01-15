@@ -365,9 +365,10 @@ String SemanticAnalyzer::lookup(String name) {
 	while (p) {
 		int place = p->find(name);
 		if (place != -1) {
-			std::stringstream sstream;
+			/*std::stringstream sstream;
 			sstream << "0x" << std::hex << place;
-			return sstream.str();
+			return sstream.str();*/
+			return name;
 		}
 		p = p->getPrevious();
 	}
