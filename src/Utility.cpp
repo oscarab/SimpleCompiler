@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <string>
-#include "Token.h"
+#include "Lexer/Token.h"
 
 extern const char* TokenTypeStr[] = { "KEY_WORD", "ID", "OPERATOR", "CONSTANT",
 							"BOUNDARY", "BRACKET" , "END"};

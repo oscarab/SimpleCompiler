@@ -1,6 +1,6 @@
-#include "SemanticAnalyzer.h"
-#include "AttributeSymbol.h"
-#include "Grammer.h"
+#include "Semantic/SemanticAnalyzer.h"
+#include "Semantic/AttributeSymbol.h"
+#include "Parser/Grammer.h"
 #include <fstream>
 #include <sstream>
 #include <iomanip>

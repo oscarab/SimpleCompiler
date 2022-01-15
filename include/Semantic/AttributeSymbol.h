@@ -1,7 +1,7 @@
 #ifndef ATTRIBUTESYMBOL_H
 #define ATTRIBUTESYMBOL_H
 
-#include "Symbol.h"
+#include "Parser/Symbol.h"
 
 class LeafSymbol : public Terminator {
 private:

@@ -1,8 +1,8 @@
 #ifndef SEMANTICANALYZER_H
 #define SEMANTICANALYZER_H
 
-#include "Quaternion.h"
-#include "SemanticAction.h"
+#include "Semantic/Quaternion.h"
+#include "Semantic/SemanticAction.h"
 #include <vector>
 #include <unordered_map>
 
@@ -55,6 +55,8 @@ private:
 	IDTable* nowTable;											// 符号表
 	std::vector<Quaternion> intermediateCode;					// 中间代码
 public:
+	SemanticAnalyzer() : nowTable(NULL), newTempCount(0) { }
+
 	void setOutStream(std::ostream&);							// 设置信息输出的文件
 	void generateSemanticAction(Grammer*, const char*);			// 生成语义动作
 	void distributeAttributeSymbols(const char*);				// 分配属性

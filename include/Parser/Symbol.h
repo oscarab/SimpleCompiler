@@ -3,8 +3,8 @@
 
 #include <string>
 #include <vector>
-#include "ReflectBase.h"
-#include "Token.h"
+#include "Reflect/ReflectBase.h"
+#include "Lexer/Token.h"
 
 class Symbol;
 class Token;

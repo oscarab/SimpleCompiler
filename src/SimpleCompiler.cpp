@@ -1,9 +1,9 @@
 ﻿#include <iostream>
 #include <iomanip>
-#include "Lexer.h"
-#include "Parser.h"
+#include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
 
-#include "Symbol.h"
+#include "Parser/Symbol.h"
 
 void showHelp();
 

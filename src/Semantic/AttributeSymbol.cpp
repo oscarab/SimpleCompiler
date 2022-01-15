@@ -1,5 +1,5 @@
-#include "AttributeSymbol.h"
-#include "Token.h"
+#include "Semantic/AttributeSymbol.h"
+#include "Lexer/Token.h"
 
 extern std::vector<std::string> idTable;
 extern std::vector<double> constantTable;

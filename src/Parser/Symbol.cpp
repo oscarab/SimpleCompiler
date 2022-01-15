@@ -1,5 +1,5 @@
-#include "Token.h"
-#include "Symbol.h"
+#include "Lexer/Token.h"
+#include "Parser/Symbol.h"
 
 extern void tab(std::ostream& out, int level);
 

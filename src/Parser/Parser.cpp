@@ -1,5 +1,5 @@
-#include "Parser.h"
-#include "Lexer.h"
+#include "Parser/Parser.h"
+#include "Lexer/Lexer.h"
 #include <conio.h>
 #include <iostream>
 #include <iomanip>
@@ -12,7 +12,7 @@ extern std::string convertToString(Token& token);
  * @brief LR(1)语法分析器构造函数
  * @param fileName 文法文件名
 */
-Parser::Parser(const char* fileName) : machine(fileName) {
+Parser::Parser(const char* fileName) : machine(fileName), analyzer() {
 	machine.create();
 
 	analyzer.generateSemanticAction(machine.getGrammer(), "Semantic.txt");

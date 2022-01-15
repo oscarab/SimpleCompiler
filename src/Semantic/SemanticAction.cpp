@@ -1,6 +1,6 @@
-#include "SemanticAction.h"
-#include "SemanticAnalyzer.h"
-#include "Symbol.h"
+#include "Semantic/SemanticAction.h"
+#include "Semantic/SemanticAnalyzer.h"
+#include "Parser/Symbol.h"
 #include <unordered_map>
 
 extern std::unordered_map<std::string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPoint;

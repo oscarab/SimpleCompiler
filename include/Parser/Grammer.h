@@ -1,7 +1,7 @@
 #ifndef GRAMMER_H
 #define GRAMMER_H
 
-#include "Token.h"
+#include "Lexer/Token.h"
 #include "Symbol.h"
 #include <string>
 #include <vector>

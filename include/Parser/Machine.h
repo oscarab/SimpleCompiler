@@ -1,7 +1,7 @@
 #ifndef MACHINE_H
 #define MACHINE_H
 
-#include "Token.h"
+#include "Lexer/Token.h"
 #include "Grammer.h"
 #include <vector>
 #include <set>

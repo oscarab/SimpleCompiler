@@ -2,8 +2,8 @@
 #define PARSER_H
 
 #include "Machine.h"
-#include "Lexer.h"
-#include "SemanticAnalyzer.h"
+#include "Lexer/Lexer.h"
+#include "Semantic/SemanticAnalyzer.h"
 
 struct Action;
 class SyntaxNode;

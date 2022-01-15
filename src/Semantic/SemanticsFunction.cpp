@@ -1,8 +1,8 @@
 #include <vector>
 #include <unordered_map>
-#include "SemanticAction.h"
-#include "SemanticAnalyzer.h"
-#include "Symbol.h"
+#include "Semantic/SemanticAction.h"
+#include "Semantic/SemanticAnalyzer.h"
+#include "Parser/Symbol.h"
 
 using namespace std;
 
