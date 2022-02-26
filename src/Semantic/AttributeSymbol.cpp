@@ -38,18 +38,15 @@ void VariableSymbol::setupReflect() {
 	reflectMap["place"] = ReflectItem{ "string", (char*)&place };
 	reflectMap["type"] = ReflectItem{ "string", (char*)&type };
 	reflectMap["width"] = ReflectItem{ "int", (char*)&width };
+	reflectMap["truelist"] = ReflectItem{ "vector", (char*)&truelist };
+	reflectMap["falselist"] = ReflectItem{ "vector", (char*)&falselist };
 }
 
 void OperatorSymbol::setupReflect() {
 	reflectMap["op"] = ReflectItem{ "string", (char*)&op };
 }
 
-void ControlSymbol::setupReflect() {
-	reflectMap["truelist"] = ReflectItem{ "int", (char*)&truelist };
-	reflectMap["falselist"] = ReflectItem{ "int", (char*)&falselist };
-}
-
 void EpsilonSymbol::setupReflect() {
 	reflectMap["quad"] = ReflectItem{ "int", (char*)&quad };
-	reflectMap["truelist"] = ReflectItem{ "int", (char*)&truelist };
+	reflectMap["nextlist"] = ReflectItem{ "int", (char*)&nextlist };
 }

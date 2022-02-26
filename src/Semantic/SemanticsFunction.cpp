@@ -142,12 +142,23 @@ void bktable(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 void backpatch(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	Symbol* symbol = analyzer->getSymbolFromStack(properties[0].index);
 	NonTerminator* des = static_cast<NonTerminator*>(symbol);
-	symbol = analyzer->getSymbolFromStack(properties[1].index);
-	NonTerminator* src = static_cast<NonTerminator*>(symbol);
+	string quad = unwrap(analyzer, properties[1]);
 
-	int index = *(int*)des->getFields(properties[0].property);
-	int quad = *(int*)src->getFields(properties[1].property);
-	analyzer->backpatch(index, to_string(quad));
+	if (quad == "next1") quad = to_string(analyzer->nextstat(1));
+	else if (quad == "next2") quad = to_string(analyzer->nextstat(2));
+
+	if (des->getFieldType(properties[0].property) == "vector") {
+		vector<int>* indices = (vector<int>*)des->getFields(properties[0].property);
+
+		for (int idx : *indices) {
+			analyzer->backpatch(idx, quad);
+		}
+	}
+	else {
+		int* idx = (int*)des->getFields(properties[0].property);
+		analyzer->backpatch(*idx, quad);
+	}
+	
 }
 
 /**
@@ -200,7 +211,7 @@ void checktype(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 }
 
 /**
- * @brief 保存下形式参数
+ * @brief 保存形式参数
  * @param analyzer 语义分析器
  * @param properties
 */
@@ -211,7 +222,7 @@ void addpara(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 }
 
 /**
- * @brief 保存下实参
+ * @brief 保存实参
  * @param analyzer 语义分析器
  * @param properties
 */
@@ -222,6 +233,36 @@ void addarg(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	String str1 = *(String*)src->getFields(properties[1].property);
 	String str2 = *(String*)des->getFields(properties[0].property);
 	des->setFields(properties[0].property, (char*)&(str2 + str1 + ";"));
+}
+
+/**
+ * @brief 创建真假入口链表
+ * @param analyzer 
+ * @param properties 
+*/
+void makelist(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	NonTerminator* t = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[0].index));
+	vector<int>* list = (vector<int>*) t->getFields(properties[0].property);
+	int result = analyzer->nextstat(stoi(properties[1].property));
+
+	list->push_back(result);
+}
+
+/**
+ * @brief 合并真假入口链表
+ * @param analyzer 
+ * @param properties 
+*/
+void merge(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	NonTerminator* des = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[0].index));
+	NonTerminator* arg1 = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[1].index));
+	NonTerminator* arg2 = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[2].index));
+	vector<int>* des_list = (vector<int>*) des->getFields(properties[0].property);
+	vector<int>* list1 = (vector<int>*) arg1->getFields(properties[1].property);
+	vector<int>* list2 = (vector<int>*) arg2->getFields(properties[2].property);
+
+	des_list->insert(des_list->end(), list1->begin(), list1->end());
+	des_list->insert(des_list->end(), list2->begin(), list2->end());
 }
 
 unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPoint = {
@@ -240,5 +281,7 @@ unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> funct
 	{"lookuptype", lookuptype},
 	{"checktype", checktype},
 	{"addpara", addpara},
-	{"addarg", addarg}
+	{"addarg", addarg},
+	{"makelist", makelist},
+	{"merge", merge}
 };

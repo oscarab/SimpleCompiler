@@ -105,6 +105,9 @@ void ReflectBase::setFields(std::string fields_name, char* data) {
 	else if (type == "string") {
 		*((std::string*)place) = *((std::string*)data);
 	}
+	else if (type == "vector") {
+		*((std::vector<int>*)place) = *((std::vector<int>*)data);
+	}
 }
 
 bool Symbol::operator==(const Symbol& symbol) const {

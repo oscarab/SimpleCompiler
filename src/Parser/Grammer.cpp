@@ -191,7 +191,7 @@ Grammer::Grammer(const char* filename) {
 	String line;
 	while (getline(grammerFile, line)) {	// 读每一行
 		// 记录左侧非终结符
-		int pos = line.find("::=");
+		size_t pos = line.find("::=");
 		String str = line.substr(1, pos - 2);
 		Symbol* symbol = insertSymbol(str, NULL);
 		NonTerminator* non_terminator = static_cast<NonTerminator*>(symbol);
@@ -199,7 +199,7 @@ Grammer::Grammer(const char* filename) {
 		prodMapTable[symbol] = leftSymbols.size() - 1;
 
 		// 记录右侧符号
-		int pos1 = pos + 3, pos2 = pos1 + 1;
+		size_t pos1 = pos + 3, pos2 = pos1 + 1;
 		SymbolChain production;			// 存储产生式
 		while (pos1 < line.size()) {
 			if (line[pos1] == '<') {	// 读到非终结符
@@ -233,7 +233,7 @@ Grammer::Grammer(const char* filename) {
 
 	productCounter.push_back(0);
 	for (Symbol* sym : leftSymbols) {
-		int p = productCounter.size();
+		size_t p = productCounter.size();
 
 		NonTerminator* non_terminator = static_cast<NonTerminator*>(sym);
 		productCounter.push_back(productCounter[p - 1] + non_terminator->getProductions()->size());

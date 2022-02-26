@@ -2,6 +2,7 @@
 #define ATTRIBUTESYMBOL_H
 
 #include "Parser/Symbol.h"
+#include <vector>
 
 class LeafSymbol : public Terminator {
 private:
@@ -18,6 +19,8 @@ private:
 	String place;
 	String type;
 	int width;
+	std::vector<int> truelist;
+	std::vector<int> falselist;
 public:
 	VariableSymbol(String name) : NonTerminator(name) { place = ""; }
 	virtual void setupReflect();
@@ -31,19 +34,10 @@ public:
 	virtual void setupReflect();
 };
 
-class ControlSymbol : public NonTerminator {
-private:
-	int truelist;
-	int falselist;
-public:
-	ControlSymbol(String name) : NonTerminator(name) {}
-	virtual void setupReflect();
-};
-
 class EpsilonSymbol : public NonTerminator {
 private:
 	int quad;
-	int truelist;
+	int nextlist;
 public:
 	EpsilonSymbol(String name) : NonTerminator(name) {}
 	virtual void setupReflect();

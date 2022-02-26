@@ -55,7 +55,7 @@ private:
 	IDTable* nowTable;											// 符号表
 	std::vector<Quaternion> intermediateCode;					// 中间代码
 public:
-	SemanticAnalyzer() : nowTable(NULL), newTempCount(0) { }
+	SemanticAnalyzer() : nowTable(NULL), newTempCount(0), out(NULL) { }
 
 	void setOutStream(std::ostream&);							// 设置信息输出的文件
 	void generateSemanticAction(Grammer*, const char*);			// 生成语义动作

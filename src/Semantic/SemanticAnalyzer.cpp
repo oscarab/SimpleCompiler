@@ -6,7 +6,7 @@
 #include <iomanip>
 
 Property packProperty(String& str) {
-	int point = str.find(".");
+	size_t point = str.find(".");
 
 	if (point == str.npos) {
 		if (str.find("'") == str.npos) {
@@ -21,8 +21,7 @@ Property packProperty(String& str) {
 }
 
 void packParameter(String str, SemanticAction& action) {
-	int start_pos = 0;
-	int end_pos = 0;
+	size_t start_pos = 0, end_pos = 0;
 
 	// 分割出每一个参数
 	while (start_pos < str.size()) {
@@ -120,8 +119,8 @@ void IDTable::addParameter(String type) {
 
 bool IDTable::checkParameters(String type) {
 	std::vector<String> args;
-	int start = 0;
-	int end = type.find(";", start);
+	size_t start = 0, end = type.find(";", start);
+
 	while (end != type.npos) {
 		args.push_back(type.substr(start, end - start));
 		start = end + 1;
@@ -165,8 +164,7 @@ void SemanticAnalyzer::generateSemanticAction(Grammer* grammer, const char* file
 	String line;
 	// 逐行读入
 	while (getline(semanticFile, line)) {
-		int start_pos = 0;
-		int end_pos = 0;
+		size_t start_pos = 0, end_pos = 0;
 		if (line == "$$") {
 			semanticActions.push_back(std::vector<SemanticAction>());
 			continue;
@@ -183,8 +181,7 @@ void SemanticAnalyzer::generateSemanticAction(Grammer* grammer, const char* file
 				start_pos = end_pos + 1;
 				continue;
 			}
-			int stp = 0;
-			int edp = str_action.find(";", stp);
+			size_t stp = 0, edp = str_action.find(";", stp);
 			std::vector<SemanticAction> actions;
 
 			// 分割出某一个语义动作
@@ -192,8 +189,8 @@ void SemanticAnalyzer::generateSemanticAction(Grammer* grammer, const char* file
 				edp = str_action.find(";", stp);
 				String str_subaction = str_action.substr(stp, edp - stp);
 
-				int equal_pos = str_subaction.find("=");
-				int func_pos = str_subaction.find("(");
+				size_t equal_pos = str_subaction.find("=");
+				size_t func_pos = str_subaction.find("(");
 
 				// 分为三种情况，单一调用函数、单一赋值、二者结合
 				if (equal_pos != str_subaction.npos && str_subaction.find(":=") == str_subaction.npos) {
@@ -279,11 +276,6 @@ Symbol* SemanticAnalyzer::createAttributeSymbol(Symbol* symbol) {
 		}
 		else if (class_name == "OperatorSymbol") {
 			non_terminator = new OperatorSymbol(non_terminator->getName());
-			non_terminator->setupReflect();
-			return non_terminator;
-		}
-		else if (class_name == "ControlSymbol") {
-			non_terminator = new ControlSymbol(non_terminator->getName());
 			non_terminator->setupReflect();
 			return non_terminator;
 		}

@@ -17,7 +17,7 @@ while语句 EpsilonSymbol
 if语句 EpsilonSymbol
 逻辑比较 OperatorSymbol
 逻辑运算 OperatorSymbol
-控制语句 ControlSymbol
+控制语句 VariableSymbol
 表达式 VariableSymbol
 逻辑表达式列表 VariableSymbol
 逻辑表达式 VariableSymbol
