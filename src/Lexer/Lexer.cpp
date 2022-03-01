@@ -1,4 +1,5 @@
 #include "Lexer/Lexer.h"
+#include "Output/Output.h"
 #include <iostream>
 
 using namespace Lexical;
@@ -8,6 +9,7 @@ extern const char* TokenAttrStr[];
 extern std::vector<std::string> idTable;	// 标识符表
 extern std::vector<double> constantTable;	// 常数表
 extern void tab(std::ostream& out, int level);
+extern Output output;
 
 /***********单词二元组***********/
 
@@ -153,9 +155,9 @@ std::vector<Token>* Lexer::getTokens() {
 	return &tokens;
 }
 
-void Lexer::writeTokens(std::ostream& out) {
+void Lexer::writeTokens() {
 	for (Token& token : tokens) {
-		token.write(out, 0, true);
+		token.write(output[3], 0, true);
 	}
 }
 

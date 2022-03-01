@@ -29,7 +29,7 @@ void packParameter(String str, SemanticAction& action) {
 		end_pos = end_pos == str.npos ? str.size() : end_pos;
 
 		String arg = str.substr(start_pos, end_pos - start_pos);
-		action.addProperties(packProperty(arg));
+		action.addProperty(packProperty(arg));
 
 		start_pos = end_pos + 1;
 	}
@@ -37,8 +37,8 @@ void packParameter(String str, SemanticAction& action) {
 
 /****************************符号表成员函数****************************/
 
-IDTable::IDTable(IDTable* pre) {
-	previous = pre;
+IDTable::IDTable(IDTable* prev) {
+	previous = prev;
 	width = 0;
 }
 
@@ -113,10 +113,19 @@ void IDTable::addNext(IDTable* next_table) {
 	next.push_back(next_table);
 }
 
+/**
+ * @brief 添加参数（该符号表表示一个函数）
+ * @param type 参数类型
+*/
 void IDTable::addParameter(String type) {
 	parameters.push_back(type);
 }
 
+/**
+ * @brief 检查调用函数时的类型是否匹配
+ * @param type 实参类型
+ * @return 是否匹配
+*/
 bool IDTable::checkParameters(String type) {
 	std::vector<String> args;
 	size_t start = 0, end = type.find(";", start);
@@ -201,7 +210,7 @@ void SemanticAnalyzer::generateSemanticAction(Grammer* grammer, const char* file
 						SemanticAction action;
 						action.setOperator(SemanticOperator::ALL);
 						action.setFunctionExecutor(str_subaction.substr(equal_pos + 1, func_pos - equal_pos - 1));
-						action.addProperties(packProperty(left_valu));
+						action.addProperty(packProperty(left_valu));
 						if (func_pos + 1 < str_subaction.size() - 1) {
 							packParameter(str_subaction.substr(func_pos + 1, str_subaction.size() - 2 - func_pos), action);
 						}
@@ -210,8 +219,8 @@ void SemanticAnalyzer::generateSemanticAction(Grammer* grammer, const char* file
 					else {
 						SemanticAction action;
 						action.setOperator(SemanticOperator::ASSIGN);
-						action.addProperties(packProperty(left_valu));
-						action.addProperties(packProperty(right));
+						action.addProperty(packProperty(left_valu));
+						action.addProperty(packProperty(right));
 						actions.push_back(action);
 					}
 				}
@@ -246,9 +255,10 @@ void SemanticAnalyzer::distributeAttributeSymbols(const char* file_name) {
 	}
 
 	String line;
+	size_t pos;
 	// 逐行读入
 	while (getline(fin, line)) {
-		int pos = line.find(" ");
+		pos = line.find(" ");
 		symbolDistribute[line.substr(0, pos)] = line.substr(pos + 1);
 	}
 }
@@ -357,10 +367,9 @@ String SemanticAnalyzer::lookup(String name) {
 	while (p) {
 		int place = p->find(name);
 		if (place != -1) {
-			/*std::stringstream sstream;
+			std::stringstream sstream;
 			sstream << "0x" << std::hex << place;
-			return sstream.str();*/
-			return name;
+			return sstream.str();
 		}
 		p = p->getPrevious();
 	}

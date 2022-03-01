@@ -31,7 +31,7 @@ private:
 public:
 	void setOperator(SemanticOperator);
 	void setFunctionExecutor(std::string);
-	void addProperties(Property);
+	void addProperty(Property);
 	void execute(SemanticAnalyzer*);
 };
 

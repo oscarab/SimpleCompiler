@@ -2,10 +2,11 @@
 #include <iomanip>
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-
 #include "Parser/Symbol.h"
+#include "Output/Output.h"
 
 void showHelp();
+Output output;
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -37,6 +38,11 @@ int main(int argc, char* argv[]) {
     }
 
     char* code_file = argv[argc - 1];
+    output.add("table.txt");
+    output.add("analysis.txt");
+    output.add("IntermediateCode.txt");
+    output.add("tokens.txt");
+    output.add("tree.txt");
 
     // 创建LR(1)分析表
     Parser parser("Grammer.txt");
@@ -44,39 +50,21 @@ int main(int argc, char* argv[]) {
 
     // 判断是否输出分析表到文件
     if (table_out) {
-        std::ofstream fout("table.txt");
-        parser.writeTable(fout);
-        fout.close();
+        parser.writeTable();
     }
 
-    std::ofstream fout("analysis.txt");
     Lexical::Lexer lexer(code_file);
 
-    std::ofstream code_out("IntermediateCode.txt");
-    bool sucess = parser.analysis(&lexer, fout, code_out, analysis_step);
-    fout.close();
-    code_out.close();
+    bool sucess = parser.analysis(&lexer, analysis_step);
 
     // 判断是否输出所有单词
     if (tokens_out && sucess) {
-        std::ofstream fout("tokens.txt");
-        lexer.writeTokens(fout);
-        fout.close();
-    }
-    else {
-        std::ofstream fout("tokens.txt", std::ios::out);
-        fout.close();
+        lexer.writeTokens();
     }
 
     // 判断是否输出语法树到文件
     if (tree_out && sucess) {
-        std::ofstream fout("tree.txt");
-        parser.getTree()->getHead()->write(fout, 0, ' ');
-        fout.close();
-    }
-    else {
-        std::ofstream fout("tree.txt", std::ios::out);
-        fout.close();
+        parser.getTree()->getHead()->write(output[4], 0, ' ');
     }
 
     std::cout << "finish!";

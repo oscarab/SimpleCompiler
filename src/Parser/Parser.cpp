@@ -1,5 +1,6 @@
 #include "Parser/Parser.h"
 #include "Lexer/Lexer.h"
+#include "Output/Output.h"
 #include <conio.h>
 #include <iostream>
 #include <iomanip>
@@ -7,6 +8,7 @@
 extern void tab(std::ostream& out, int level);
 extern int getWidth(int number, std::string str);
 extern std::string convertToString(Token& token);
+extern Output output;
 
 /**
  * @brief LR(1)语法分析器构造函数
@@ -69,15 +71,16 @@ void Parser::createTable() {
  * @param lexer 词法分析器
  * @return 是否分析成功
 */
-bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& code_out, bool step) {
+bool Parser::analysis(Lexical::Lexer* lexer, bool step) {
 	// 获取Token流
-	if (!lexer->run(out)) return false;
+	if (!lexer->run(output[1])) return false;
 	std::vector<Token>* tokens = lexer->getTokens();
 	int len = tokens->size();
 	Grammer* grammer = machine.getGrammer();
+
 	stateStack.push_back(0);
 	symbolStack.push_back(grammer->getSymbol(String("#")));
-	analyzer.setOutStream(out);
+	analyzer.setOutStream(output[1]);
 
 	for (int i = 0; i < len; i++) {
 		int nowState = stateStack[stateStack.size() - 1];
@@ -93,15 +96,15 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& co
 			terminator.write(std::cout, 0);
 			std::cout << std::endl << "Action: " << std::endl;
 		}
-		writeStack(out);
-		out << std::endl << "Now at: " << std::endl;
-		terminator.write(out, 0);
-		out << std::endl << "Action: " << std::endl;
+		writeStack(output[1]);
+		output[1] << std::endl << "Now at: " << std::endl;
+		terminator.write(output[1], 0);
+		output[1] << std::endl << "Action: " << std::endl;
 
 		// 遇到可能错误的语法
 		if (table[nowState].count(&terminator) == 0) {
 			std::cout << "syntax error!" << std::endl;
-			out << "syntax error!" << std::endl;
+			output[1] << "syntax error!" << std::endl;
 			return false;
 		}
 
@@ -110,8 +113,8 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& co
 		
 		if (action.accept) {
 			std::cout << "Accept!" << std::endl;
-			out << "Accept!" << std::endl;
-			analyzer.outputIntermediateCode(code_out);
+			output[1] << "Accept!" << std::endl;
+			analyzer.outputIntermediateCode(output[2]);
 			return true;
 		}
 		else if (action.reduction) {
@@ -123,9 +126,9 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& co
 			if (product_str[0]->isEnd() && static_cast<Terminator*>(product_str[0])->getToken().isEmpty()) {
 				pop_cnt = 0;
 			}
+
 			int reduce_cnt = pop_cnt;
 			analyzer.reduce(product.symbolPoint, grammer->getProductionCount(product.symbolPoint) + product.productionIndex, pop_cnt);
-
 			tree.construct(product.symbolPoint, pop_cnt);
 
 			while (pop_cnt--) {
@@ -145,8 +148,8 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& co
 				std::cout << "Goto state " << dest;
 				_getch();
 			}
-			out << "Reduce the " << reduce_cnt << " characters at the top of the stack" << std::endl;
-			out << "Goto state " << dest << std::endl;
+			output[1] << "Reduce the " << reduce_cnt << " characters at the top of the stack" << std::endl;
+			output[1] << "Goto state " << dest << std::endl;
 		}
 		else {
 			// 移入
@@ -163,8 +166,8 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& co
 				std::cout << "Goto state " << action.go;
 				_getch();
 			}
-			out << "Push the current symbol onto the symbol stack" << std::endl;
-			out << "Goto state " << action.go << std::endl;
+			output[1] << "Push the current symbol onto the symbol stack" << std::endl;
+			output[1] << "Goto state " << action.go << std::endl;
 
 		}
 	}
@@ -173,9 +176,8 @@ bool Parser::analysis(Lexical::Lexer* lexer, std::ostream& out, std::ostream& co
 
 /**
  * @brief 输出表格
- * @param out 输出源
 */
-void Parser::writeTable(std::ostream& out) {
+void Parser::writeTable() {
 	using namespace std;
 	vector<State>* states = machine.getStates();
 	int size = states->size();			// 状态数量
@@ -215,40 +217,40 @@ void Parser::writeTable(std::ostream& out) {
 	whole_w += term_cnt + non_term_cnt + 2;
 
 	// 表头
-	out << "|";
-	out << setw(width[0]) << "状态";
-	out << "|";
+	output[0] << "|";
+	output[0] << setw(width[0]) << "状态";
+	output[0] << "|";
 	for (int i = 0; i < term_cnt; i++) {
 		Token token = terminator[i]->getToken();
-		out << setw(width[i + 1]) << convertToString(token);
-		out << "|";
+		output[0] << setw(width[i + 1]) << convertToString(token);
+		output[0] << "|";
 	}
 	for (int i = 0; i < non_term_cnt; i++) {
-		out << setw(width[term_cnt + i + 1]) << non_terminator[i]->getName();
-		out << "|";
+		output[0] << setw(width[term_cnt + i + 1]) << non_terminator[i]->getName();
+		output[0] << "|";
 	}
-	out << std::endl;
+	output[0] << std::endl;
 
 	// 各个状态
 	for (int i = 0; i < size; i++) {
-		out << "|";
-		out << setw(width[0]) << i;
-		out << "|";
+		output[0] << "|";
+		output[0] << setw(width[0]) << i;
+		output[0] << "|";
 		for (int j = 0; j < term_cnt + non_term_cnt; j++) {
 			Symbol* sym = j < term_cnt? (Symbol*) terminator[j] : non_terminator[j - term_cnt];
 			auto iter = table[i].find(sym);
-			out << setw(width[j + 1]);
+			output[0] << setw(width[j + 1]);
 
 			if (iter != table[i].end()) {
 				Action action = (*iter).second;
-				out << action.toString();
+				output[0] << action.toString();
 			}
 			else {
-				out << " ";
+				output[0] << " ";
 			}
-			out << "|";
+			output[0] << "|";
 		}
-		out << std::endl;
+		output[0] << std::endl;
 	}
 }
 

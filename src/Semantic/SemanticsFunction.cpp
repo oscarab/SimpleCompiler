@@ -265,7 +265,7 @@ void merge(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	des_list->insert(des_list->end(), list2->begin(), list2->end());
 }
 
-unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPoint = {
+unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPointer = {
 	{"newtemp", newtemp},
 	{"lookup", lookup},
 	{"backpatch", backpatch},

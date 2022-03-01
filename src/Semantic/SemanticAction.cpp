@@ -3,20 +3,28 @@
 #include "Parser/Symbol.h"
 #include <unordered_map>
 
-extern std::unordered_map<std::string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPoint;
+extern std::unordered_map<std::string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPointer;
 
 void SemanticAction::setOperator(SemanticOperator op) {
 	this->op = op;
 }
 
+/**
+ * @brief 设置需要执行的函数
+ * @param func 执行的函数名
+*/
 void SemanticAction::setFunctionExecutor(std::string func) {
-	if (functionsPoint[func] == NULL) {
+	if (functionsPointer[func] == NULL) {
 		functionExecutor = NULL;
 	}
-	functionExecutor = functionsPoint[func];
+	functionExecutor = functionsPointer[func];
 }
 
-void SemanticAction::addProperties(Property property) {
+/**
+ * @brief 添加参数
+ * @param property 参数 
+*/
+void SemanticAction::addProperty(Property property) {
 	properties.push_back(property);
 }
 
