@@ -5,7 +5,10 @@
 // 指针前移并判断是否需要请求新数据
 #define STEP_OR_REQUEST {if (step() == 0) { \
 						rollback();\
-						return Token(TokenType::INCOMPLETE, TokenAttribute::None);}}
+						return Token(TokenType::INCOMPLETE, TokenAttribute::None, row, column);}}
+#define NEW_LINE row++, column = 0;
+#define MOVE_COL(a) column += a;
+#define BACK_COL(a) column -= a;
 
 using namespace Lexical;
 
@@ -22,6 +25,8 @@ Scanner::Scanner() {
 	scanPoint = -1;
 
 	buffer = NULL;
+
+	row = column = 0;
 }
 
 // 获取buffer数组
@@ -59,32 +64,41 @@ int Scanner::isReachComplete() {
 
 // 指针前进
 int Scanner::step() {
+	MOVE_COL(1)
 	if (scanPoint + 1 >= endPoint) {
 		scanPoint = (scanPoint + 1) % (2 * BLOCK_SIZE);
 		return isComplete;
 	}
-	scanPoint = (scanPoint + 1) % (2 *BLOCK_SIZE);
+	scanPoint = (scanPoint + 1) % (2 * BLOCK_SIZE);
 	return isReachComplete();
 }
 
 // 指针后退
 void Scanner::retract() {
+	BACK_COL(1)
 	scanPoint--;
 }
 
 // 指针对齐
 void Scanner::align() {
+	MOVE_COL(1)
 	startPoint = ++scanPoint;
 }
 
 // 撤销已读入的字符
 void Scanner::rollback() {
+	BACK_COL(scanPoint - startPoint - 1)
 	scanPoint = --startPoint;
 }
 
 // 跳过空白
 void Scanner::skipBlank() {
-	while (buffer[scanPoint] == ' ') {
+	while (buffer[scanPoint] == ' ' || buffer[scanPoint] == '\n') {
+		MOVE_COL(1)
+		if (buffer[scanPoint] == '\n') {
+			NEW_LINE
+		}
+
 		startPoint++;
 		scanPoint++;
 	}
@@ -162,12 +176,12 @@ Token Scanner::scan() {
 
 	if (isReachComplete() == 1) {
 		// 已经完成扫描
-		return Token(TokenType::COMPLETE, TokenAttribute::None);
+		return Token(TokenType::COMPLETE, TokenAttribute::None, row, column);
 	}
 	else if (isReachComplete() == 0) {
 		// 可能还有后续数据，请求数据
 		startPoint = scanPoint = endPoint % (2 * BLOCK_SIZE) - 1;
-		return Token(TokenType::INCOMPLETE, TokenAttribute::None);
+		return Token(TokenType::INCOMPLETE, TokenAttribute::None, row, column);
 	}
 
 	// 遇到字母
@@ -180,11 +194,11 @@ Token Scanner::scan() {
 		if (attr == TokenAttribute::RealID) {
 			// 自定义标识符
 			value = insertID();
-			return Token(TokenType::ID, TokenAttribute::RealID, value);
+			return Token(TokenType::ID, TokenAttribute::RealID, value, row, column);
 		}
 		else {
 			// 关键字
-			return Token(TokenType::KEY_WORD, attr);
+			return Token(TokenType::KEY_WORD, attr, row, column);
 		}
 	}
 	else if (isDigit()) {	// 遇到数字
@@ -201,7 +215,7 @@ Token Scanner::scan() {
 			if (buffer[scanPoint] == 'e' || buffer[scanPoint] == 'E') {
 				STEP_OR_REQUEST;
 				if (buffer[scanPoint] == '-') STEP_OR_REQUEST;
-				if (!isDigit()) return Token(TokenType::FAIL, TokenAttribute::None);
+				if (!isDigit()) return Token(TokenType::FAIL, TokenAttribute::None, row, column);
 				while (isDigit()) {
 					// 读取指数部分
 					STEP_OR_REQUEST;
@@ -210,68 +224,68 @@ Token Scanner::scan() {
 		}
 		retract();
 		value = insertConstant();
-		return Token(TokenType::CONSTANT, TokenAttribute::RealConstant, value);
+		return Token(TokenType::CONSTANT, TokenAttribute::RealConstant, value, row, column);
 	}
-	else if (buffer[scanPoint] == '+') return Token(TokenType::OPERATOR, TokenAttribute::Add);
-	else if (buffer[scanPoint] == '-') return Token(TokenType::OPERATOR, TokenAttribute::Minus);
-	else if (buffer[scanPoint] == '*') return Token(TokenType::OPERATOR, TokenAttribute::Multiply);
-	else if (buffer[scanPoint] == '/') return Token(TokenType::OPERATOR, TokenAttribute::Divide);
+	else if (buffer[scanPoint] == '+') return Token(TokenType::OPERATOR, TokenAttribute::Add, row, column);
+	else if (buffer[scanPoint] == '-') return Token(TokenType::OPERATOR, TokenAttribute::Minus, row, column);
+	else if (buffer[scanPoint] == '*') return Token(TokenType::OPERATOR, TokenAttribute::Multiply, row, column);
+	else if (buffer[scanPoint] == '/') return Token(TokenType::OPERATOR, TokenAttribute::Divide, row, column);
 	else if (buffer[scanPoint] == '=') {
 		STEP_OR_REQUEST;
 		if (buffer[scanPoint] == '=') {
-			return Token(TokenType::OPERATOR, TokenAttribute::Equal);
+			return Token(TokenType::OPERATOR, TokenAttribute::Equal, row, column);
 		}
 		retract();
-		return Token(TokenType::OPERATOR, TokenAttribute::Assign);
+		return Token(TokenType::OPERATOR, TokenAttribute::Assign, row, column);
 	}
 	else if (buffer[scanPoint] == '>') {
 		STEP_OR_REQUEST;
-		if (buffer[scanPoint] == '=') return Token(TokenType::OPERATOR, TokenAttribute::Gequal);	// >=
+		if (buffer[scanPoint] == '=') return Token(TokenType::OPERATOR, TokenAttribute::Gequal, row, column);	// >=
 		retract();
-		return Token(TokenType::OPERATOR, TokenAttribute::Greater);
+		return Token(TokenType::OPERATOR, TokenAttribute::Greater, row, column);
 	}
 	else if (buffer[scanPoint] == '<') {
 		STEP_OR_REQUEST;
-		if (buffer[scanPoint] == '=') return Token(TokenType::OPERATOR, TokenAttribute::Lequal);	// <=
+		if (buffer[scanPoint] == '=') return Token(TokenType::OPERATOR, TokenAttribute::Lequal, row, column);	// <=
 		retract();
-		return Token(TokenType::OPERATOR, TokenAttribute::Less);
+		return Token(TokenType::OPERATOR, TokenAttribute::Less, row, column);
 	}
 	else if (buffer[scanPoint] == '!') {
 		STEP_OR_REQUEST;
 		if (buffer[scanPoint] == '=') {
-			return Token(TokenType::OPERATOR, TokenAttribute::Nequal);
+			return Token(TokenType::OPERATOR, TokenAttribute::Nequal, row, column);
 		}
 		else {
-			return Token(TokenType::FAIL, TokenAttribute::None);
+			return Token(TokenType::FAIL, TokenAttribute::None, row, column);
 		}
 	}
 	else if (buffer[scanPoint] == '&') {
 		STEP_OR_REQUEST;
 		if (buffer[scanPoint] == '&') {
-			return Token(TokenType::OPERATOR, TokenAttribute::AND);
+			return Token(TokenType::OPERATOR, TokenAttribute::AND, row, column);
 		}
 		else {
-			return Token(TokenType::FAIL, TokenAttribute::None);
+			return Token(TokenType::FAIL, TokenAttribute::None, row, column);
 		}
 	}
 	else if (buffer[scanPoint] == '|') {
 		STEP_OR_REQUEST;
 		if (buffer[scanPoint] == '|') {
-			return Token(TokenType::OPERATOR, TokenAttribute::OR);
+			return Token(TokenType::OPERATOR, TokenAttribute::OR, row, column);
 		}
 		else {
-			return Token(TokenType::FAIL, TokenAttribute::OR);
+			return Token(TokenType::FAIL, TokenAttribute::OR, row, column);
 		}
 	}
-	else if (buffer[scanPoint] == ',') return Token(TokenType::BOUNDARY, TokenAttribute::Comma);
-	else if (buffer[scanPoint] == ';') return Token(TokenType::BOUNDARY, TokenAttribute::Semicolon);
-	else if (buffer[scanPoint] == '{') return Token(TokenType::BRACKET, TokenAttribute::LeftBrace);
-	else if (buffer[scanPoint] == '}') return Token(TokenType::BRACKET, TokenAttribute::RightBrace);
-	else if (buffer[scanPoint] == '(') return Token(TokenType::BRACKET, TokenAttribute::LeftBracket);
-	else if (buffer[scanPoint] == ')') return Token(TokenType::BRACKET, TokenAttribute::RightBracket);
+	else if (buffer[scanPoint] == ',') return Token(TokenType::BOUNDARY, TokenAttribute::Comma, row, column);
+	else if (buffer[scanPoint] == ';') return Token(TokenType::BOUNDARY, TokenAttribute::Semicolon, row, column);
+	else if (buffer[scanPoint] == '{') return Token(TokenType::BRACKET, TokenAttribute::LeftBrace, row, column);
+	else if (buffer[scanPoint] == '}') return Token(TokenType::BRACKET, TokenAttribute::RightBrace, row, column);
+	else if (buffer[scanPoint] == '(') return Token(TokenType::BRACKET, TokenAttribute::LeftBracket, row, column);
+	else if (buffer[scanPoint] == ')') return Token(TokenType::BRACKET, TokenAttribute::RightBracket, row, column);
 	else {
 		// 错误处理
-		return Token(TokenType::FAIL, TokenAttribute::None);
+		return Token(TokenType::FAIL, TokenAttribute::None, row, column);
 	}
 
 }

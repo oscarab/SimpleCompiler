@@ -84,7 +84,7 @@ public:
 	Parser(const char*);
 
 	void createTable();								// 建立分析表
-	bool analysis(Lexical::Lexer*, bool);			// 开始语法分析
+	bool analysis(Lexical::Lexer*);					// 开始语法分析
 
 	SyntaxTree* getTree();							// 获取语法树
 	void writeTable();								// 输出分析表

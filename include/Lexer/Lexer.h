@@ -68,6 +68,7 @@ namespace Lexical {
 		int scanPoint;		// 扫描指针
 		int endPoint;		// 结束位置
 		int isComplete;		// 完整度，为1表示完整，不会返回INCOMPLETE
+		int row, column;	// 当前扫描到的行、列
 
 		std::unordered_map<std::string, int> tablePoint;
 

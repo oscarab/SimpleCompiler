@@ -13,12 +13,14 @@ extern Output output;
 
 /***********单词二元组***********/
 
-Token::Token(TokenType type, TokenAttribute attribute) : Token(type, attribute, -1){}
+Token::Token(TokenType type, TokenAttribute attribute, int _row, int _col) : Token(type, attribute, -1, _row, _col){}
 
-Token::Token(TokenType _type, TokenAttribute _attribute, int _index) {
+Token::Token(TokenType _type, TokenAttribute _attribute, int _index, int _row, int _col) {
 	type = _type;
 	attribute = _attribute;
 	index = _index;
+	row = _row;
+	col = _col;
 }
 
 /**
@@ -213,8 +215,8 @@ void Reader::pretreat() {
 	int p = start;
 
 	while (p < start + readin) {
-		// 去除换行与tab
-		if (buffer[p] == '\n' || buffer[p] == '\t') {
+		// 去除tab
+		if (buffer[p] == '\t') {
 			buffer[p] = ' ';
 		}
 
@@ -225,14 +227,14 @@ void Reader::pretreat() {
 				while (buffer[++p] != '\n') {
 					buffer[p] = ' ';
 				}
-				buffer[p++] = ' ';
 			}
 			else if (buffer[p] == '*') {
 				// 遇到多行注释
 				buffer[p] = buffer[p - 1] = ' ';
 				p++;
 				while (buffer[p] != '*' || buffer[p + 1] != '/') {
-					buffer[p++] = ' ';
+					if (buffer[p] == '\n') p++;
+					else buffer[p++] = ' ';
 				}
 				buffer[p] = buffer[p + 1] = ' ';
 				p += 2;

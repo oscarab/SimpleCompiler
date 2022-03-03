@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
     output.add("IntermediateCode.txt");
     output.add("tokens.txt");
     output.add("tree.txt");
+    output.setStep(analysis_step);
 
     // 创建LR(1)分析表
     Parser parser("Grammer.txt");
@@ -55,7 +56,7 @@ int main(int argc, char* argv[]) {
 
     Lexical::Lexer lexer(code_file);
 
-    bool sucess = parser.analysis(&lexer, analysis_step);
+    bool sucess = parser.analysis(&lexer);
 
     // 判断是否输出所有单词
     if (tokens_out && sucess) {

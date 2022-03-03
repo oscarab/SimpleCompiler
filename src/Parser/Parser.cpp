@@ -1,7 +1,6 @@
 #include "Parser/Parser.h"
 #include "Lexer/Lexer.h"
 #include "Output/Output.h"
-#include <conio.h>
 #include <iostream>
 #include <iomanip>
 
@@ -71,9 +70,10 @@ void Parser::createTable() {
  * @param lexer 词法分析器
  * @return 是否分析成功
 */
-bool Parser::analysis(Lexical::Lexer* lexer, bool step) {
+bool Parser::analysis(Lexical::Lexer* lexer) {
 	// 获取Token流
 	if (!lexer->run(output[1])) return false;
+
 	std::vector<Token>* tokens = lexer->getTokens();
 	int len = tokens->size();
 	Grammer* grammer = machine.getGrammer();
@@ -85,26 +85,14 @@ bool Parser::analysis(Lexical::Lexer* lexer, bool step) {
 	for (int i = 0; i < len; i++) {
 		int nowState = stateStack[stateStack.size() - 1];
 		Token token = (*tokens)[i];
-		int index = token.getIndex();
 		Terminator terminator(token);
 
 		// 单步分析的信息输出
-		if (step) {
-			system("cls");
-			writeStack(std::cout);
-			std::cout << std::endl << "Now at: " << std::endl;
-			terminator.write(std::cout, 0);
-			std::cout << std::endl << "Action: " << std::endl;
-		}
-		writeStack(output[1]);
-		output[1] << std::endl << "Now at: " << std::endl;
-		terminator.write(output[1], 0);
-		output[1] << std::endl << "Action: " << std::endl;
+		output.beginningMessage(&terminator, this);
 
 		// 遇到可能错误的语法
 		if (table[nowState].count(&terminator) == 0) {
-			std::cout << "syntax error!" << std::endl;
-			output[1] << "syntax error!" << std::endl;
+			output.sendMessage("syntax error!");
 			return false;
 		}
 
@@ -112,8 +100,7 @@ bool Parser::analysis(Lexical::Lexer* lexer, bool step) {
 		Action action = table[nowState][&terminator];
 		
 		if (action.accept) {
-			std::cout << "Accept!" << std::endl;
-			output[1] << "Accept!" << std::endl;
+			output.sendMessage("accept!");
 			analyzer.outputIntermediateCode(output[2]);
 			return true;
 		}
@@ -136,24 +123,18 @@ bool Parser::analysis(Lexical::Lexer* lexer, bool step) {
 				stateStack.pop_back();
 			}
 
-			nowState = stateStack[stateStack.size() - 1];
+			nowState = stateStack.back();
 			int dest = table[nowState][product.symbolPoint].go;
 
 			symbolStack.push_back(product.symbolPoint);
 			stateStack.push_back(dest);
 			i--;
 
-			if (step) {
-				std::cout << "Reduce the " << reduce_cnt << " characters at the top of the stack" << std::endl;
-				std::cout << "Goto state " << dest;
-				_getch();
-			}
-			output[1] << "Reduce the " << reduce_cnt << " characters at the top of the stack" << std::endl;
-			output[1] << "Goto state " << dest << std::endl;
+			// 输出相关信息
+			output.reductionMessage(reduce_cnt, dest);
 		}
 		else {
 			// 移入
-			token.setIndex(index);
 			Symbol* read_sym = new Terminator(token);
 			
 			tree.insert(read_sym);
@@ -161,14 +142,8 @@ bool Parser::analysis(Lexical::Lexer* lexer, bool step) {
 			stateStack.push_back(action.go);
 			analyzer.moveIn(read_sym);
 
-			if (step) {
-				std::cout << "Push the current symbol onto the symbol stack" << std::endl;
-				std::cout << "Goto state " << action.go;
-				_getch();
-			}
-			output[1] << "Push the current symbol onto the symbol stack" << std::endl;
-			output[1] << "Goto state " << action.go << std::endl;
-
+			// 输出相关信息
+			output.movingMessage(action.go);
 		}
 	}
 	return false;

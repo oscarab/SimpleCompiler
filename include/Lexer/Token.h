@@ -34,12 +34,12 @@ private:
 	TokenType type;
 	TokenAttribute attribute;
 
-	// 表指针
-	int index;
+	int index;		// 表指针
+	int row, col;	// 在源码中的行、列位置
 public:
 	// 构造函数
-	Token(TokenType, TokenAttribute);
-	Token(TokenType, TokenAttribute, int);
+	Token(TokenType, TokenAttribute, int = -1, int = -1);
+	Token(TokenType, TokenAttribute, int, int, int);
 
 	int getIndex();						// 获取表内位置
 	TokenType getType();				// 获取单词种类
