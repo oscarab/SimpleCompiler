@@ -20,6 +20,7 @@ class IDTable {
 private:
 	IDTable* previous;					// 前一个符号表
 	int width;							// 符号表宽度
+	int position;						// 若是函数的符号表，记录函数的开始地址
 	std::vector<String> parameters;		// 若是函数的符号表，单独记录形参
 
 	std::unordered_map<String, ValTable> table;
@@ -28,10 +29,11 @@ private:
 public:
 	IDTable(IDTable*);
 	void insert(String, String, int);
-	void insertProc(String, String, bool);
+	void insertProc(String, String, int, bool);
 	void addNext(IDTable*);
 	int find(String);
 	int findProc(String);
+	int findProcessPosition(String);
 	String getType(String);
 	IDTable* getNext(int);
 	IDTable* getPrevious();
@@ -67,12 +69,14 @@ public:
 	void reduce(Symbol*, int, int);
 	void outputIntermediateCode(std::ostream&);
 
+	std::vector<Quaternion>& getIntermediateCode();
+
 
 	/*************语义动作的实现*************/
 	void mktable();
 	void bktable();
 	void enter(String, String, int);
-	void enterproc(String, String, String);
+	void enterproc(String, String, String, String);
 	String newtemp();
 	String lookup(String);
 	void lookupproc(String, String);

@@ -20,6 +20,26 @@ public:
 
 	void setResult(std::string);
 	void output(std::ostream&);
+
+	std::string getOperator() {
+		return operate;
+	}
+
+	std::string getArg1() {
+		return arg1;
+	}
+
+	std::string getArg2() {
+		return arg2;
+	}
+
+	std::string getResult() {
+		return result;
+	}
+
+	int getAddress() {
+		return std::stoi(result);
+	}
 };
 
 #endif // !QUATERNION_H

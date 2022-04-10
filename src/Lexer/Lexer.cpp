@@ -13,15 +13,11 @@ extern Output output;
 
 /***********单词二元组***********/
 
-Token::Token(TokenType type, TokenAttribute attribute, int _row, int _col) : Token(type, attribute, -1, _row, _col){}
+Token::Token(TokenType type, TokenAttribute attribute, int row, int col) : Token(type, attribute, -1, row, col){}
 
-Token::Token(TokenType _type, TokenAttribute _attribute, int _index, int _row, int _col) {
-	type = _type;
-	attribute = _attribute;
-	index = _index;
-	row = _row;
-	col = _col;
-}
+Token::Token(TokenType type, TokenAttribute attribute, int index, int row, int col)
+			: type(type), attribute(attribute), index(index), row(row), col(col)
+{ }
 
 /**
  * @brief 获取符号表或常数表的下标

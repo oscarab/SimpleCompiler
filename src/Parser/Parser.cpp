@@ -1,6 +1,7 @@
 #include "Parser/Parser.h"
 #include "Lexer/Lexer.h"
 #include "Output/Output.h"
+#include "Optimization/Optimization.h"
 #include <iostream>
 #include <iomanip>
 
@@ -102,6 +103,8 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 		if (action.accept) {
 			output.sendMessage("accept!");
 			analyzer.outputIntermediateCode(output[2]);
+			Optimization opt;
+			opt.splitBlocks(analyzer.getIntermediateCode());
 			return true;
 		}
 		else if (action.reduction) {

@@ -112,8 +112,9 @@ void enter(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 void enterproc(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	string name = unwrap(analyzer, properties[0]);
 	string type = unwrap(analyzer, properties[1]);
-	string arg = unwrap(analyzer, properties[2]);
-	analyzer->enterproc(name, type, arg);
+	string position = unwrap(analyzer, properties[2]);
+	string arg = unwrap(analyzer, properties[3]);
+	analyzer->enterproc(name, type, position, arg);
 }
 
 /**

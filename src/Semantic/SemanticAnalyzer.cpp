@@ -56,14 +56,16 @@ void IDTable::insert(String name, String type, int w) {
 /**
  * @brief 往符号表中插入新过程标识符
  * @param name 名字
+ * @param pos 过程的起始位置
  * @param type 返回类型
 */
-void IDTable::insertProc(String name, String type, bool isOuter) {
+void IDTable::insertProc(String name, String type, int pos, bool isOuter) {
 	if (isOuter) {
 		table[name] = ValTable{ type, int(next.size() - 1), true };
 	}
 	else {
 		table[name] = ValTable{ type, -1, true };
+		position = pos;
 	}
 }
 
@@ -88,6 +90,27 @@ int IDTable::findProc(String name) {
 	if (p == table.end()) return -100;
 	if (!(*p).second.isFunc) return -100;
 	return (*p).second.offset;
+}
+
+/**
+ * @brief 寻找函数过程的起始地址
+ * @param name 名字
+ * @return 函数过程的起始地址
+*/
+int IDTable::findProcessPosition(String name) {
+	IDTable* p = this;
+	while (p) {
+		auto value = p->table.find(name);
+		if (value != p->table.end() && value->second.isFunc) {
+			if (value->second.offset == -1) {
+				return p->position;
+			}
+			else {
+				return p->next[value->second.offset]->position;
+			}
+		}
+		p = p->getPrevious();
+	}
 }
 
 /**
@@ -333,6 +356,7 @@ void SemanticAnalyzer::reduce(Symbol* symbol, int index, int count) {
 	reductionCount = count;
 	reductionResult = createAttributeSymbol(symbol);
 
+	// 执行这个符号对应的语义规则
 	std::vector<SemanticAction>& actions = semanticActions[index];
 	for (SemanticAction& action : actions) {
 		action.execute(this);
@@ -345,7 +369,14 @@ void SemanticAnalyzer::reduce(Symbol* symbol, int index, int count) {
 	stateStack.push_back(reductionResult);
 }
 
+std::vector<Quaternion>& SemanticAnalyzer::getIntermediateCode() {
+	return intermediateCode;
+}
+
 void SemanticAnalyzer::emite(String op, String arg1, String arg2, String res) {
+	if (op == "jal") {
+		res = std::to_string(nowTable->findProcessPosition(res));
+	}
 	intermediateCode.push_back(Quaternion(op, arg1, arg2, res));
 }
 
@@ -367,9 +398,7 @@ String SemanticAnalyzer::lookup(String name) {
 	while (p) {
 		int place = p->find(name);
 		if (place != -1) {
-			std::stringstream sstream;
-			sstream << "0x" << std::hex << place;
-			return sstream.str();
+			return name;
 		}
 		p = p->getPrevious();
 	}
@@ -432,8 +461,8 @@ void SemanticAnalyzer::enter(String name, String type, int width) {
 	nowTable->insert(name, type, width);
 }
 
-void SemanticAnalyzer::enterproc(String name, String type, String arg) {
-	nowTable->insertProc(name, type, arg == "1");
+void SemanticAnalyzer::enterproc(String name, String type, String pos, String arg) {
+	nowTable->insertProc(name, type, std::stoi(pos), arg == "1");
 	if (arg == "0" && name == "main") {
 		backpatch(0, std::to_string(nextstat(1)));
 	}
