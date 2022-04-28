@@ -11,6 +11,7 @@ private:
 
 public:
 	void splitBlocks(vector<Quaternion>&);
+	void optimize();
 };
 
 #endif // !OPTIMIZATION

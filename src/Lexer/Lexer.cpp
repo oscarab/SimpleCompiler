@@ -6,8 +6,8 @@ using namespace Lexical;
 
 extern const char* TokenTypeStr[];
 extern const char* TokenAttrStr[];
-extern std::vector<std::string> idTable;	// 标识符表
-extern std::vector<double> constantTable;	// 常数表
+extern std::vector<std::string> idTable;		// 标识符表
+extern std::vector<std::string> constantTable;	// 常数表
 extern void tab(std::ostream& out, int level);
 extern Output output;
 

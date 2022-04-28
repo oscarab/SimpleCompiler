@@ -13,7 +13,7 @@ class Symbol;
 struct ValTable {
 	String type;
 	int offset;
-	bool isFunc;
+	bool isFunction;
 };
 
 class IDTable {
@@ -31,8 +31,8 @@ public:
 	void insert(String, String, int);
 	void insertProc(String, String, int, bool);
 	void addNext(IDTable*);
-	int find(String);
-	int findProc(String);
+	int find(String, bool);
+	int findProcess(String);
 	int findProcessPosition(String);
 	String getType(String);
 	IDTable* getNext(int);

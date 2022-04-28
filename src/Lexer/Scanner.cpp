@@ -1,7 +1,5 @@
 #include "Lexer/Lexer.h"
 
-#include <sstream>
-
 // 指针前移并判断是否需要请求新数据
 #define STEP_OR_REQUEST {if (step() == 0) { \
 						rollback();\
@@ -13,7 +11,7 @@
 using namespace Lexical;
 
 extern std::vector<std::string> idTable;
-extern std::vector<double> constantTable;
+extern std::vector<std::string> constantTable;
 /* 扫描器 */
 
 // 构造函数
@@ -147,16 +145,10 @@ int Scanner::insertID() {
 int Scanner::insertConstant() {
 	std::string str = std::string(buffer + startPoint, (scanPoint - startPoint) + 1);
 	int index;
-	double constant;
-	std::stringstream strstream;
-
-	// 字符串转实数
-	strstream << str;
-	strstream >> constant;
-
+	
 	if (tablePoint.find(str) == tablePoint.end()) {
 		// 插入常数表
-		constantTable.push_back(constant);
+		constantTable.push_back(str);
 		index = constantTable.size() - 1;
 		tablePoint[str] = index;
 	}

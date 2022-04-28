@@ -46,7 +46,7 @@ extern const std::unordered_map<std::string, Token> tokenConvert{
 };
 
 std::vector<std::string> idTable;	// 词法分析标识符表
-std::vector<double> constantTable;	// 词法分析常数表
+std::vector<std::string> constantTable;	// 词法分析常数表
 
 /**
  * @brief 输出TAB
@@ -75,7 +75,7 @@ std::string convertToString(Token& token) {
 		return idTable[token.getIndex()];
 	}
 	else if (token.getType() == TokenType::CONSTANT && token.getIndex() >= 0){
-		return std::to_string(constantTable[token.getIndex()]);
+		return constantTable[token.getIndex()];
 	}
 	else {
 		if (token.getType() == TokenType::END) {

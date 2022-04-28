@@ -103,8 +103,6 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 		if (action.accept) {
 			output.sendMessage("accept!");
 			analyzer.outputIntermediateCode(output[2]);
-			Optimization opt;
-			opt.splitBlocks(analyzer.getIntermediateCode());
 			return true;
 		}
 		else if (action.reduction) {
@@ -150,6 +148,12 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 		}
 	}
 	return false;
+}
+
+bool Parser::optimize() {
+	optimization.splitBlocks(analyzer.getIntermediateCode());
+	optimization.optimize();
+	return true;
 }
 
 /**

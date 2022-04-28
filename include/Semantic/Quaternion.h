@@ -6,39 +6,35 @@
 
 struct Variable {
 	std::string name;
-	int offset;
+	int address;
 };
 
 class Quaternion {
 private:
 	std::string operate;
-	std::string arg1;
-	std::string arg2;
-	std::string result;
+	Variable parameter1;
+	Variable parameter2;
+	Variable result;
 public:
-	Quaternion(std::string, std::string, std::string, std::string);
+	Quaternion(std::string, Variable, Variable, Variable);
 
-	void setResult(std::string);
+	void setResult(Variable);
 	void output(std::ostream&);
 
 	std::string getOperator() {
 		return operate;
 	}
 
-	std::string getArg1() {
-		return arg1;
+	Variable getParameter(int no) {
+		return no == 1 ? parameter1 : parameter2;
 	}
 
-	std::string getArg2() {
-		return arg2;
-	}
-
-	std::string getResult() {
+	Variable getResult() {
 		return result;
 	}
 
 	int getAddress() {
-		return std::stoi(result);
+		return std::stoi(result.name);
 	}
 };
 

@@ -2,7 +2,7 @@
 #include "Lexer/Token.h"
 
 extern std::vector<std::string> idTable;
-extern std::vector<double> constantTable;
+extern std::vector<std::string> constantTable;
 extern const char* TokenAttrStr[];
 
 LeafSymbol::LeafSymbol(Token token) : Terminator(token){
@@ -16,15 +16,9 @@ LeafSymbol::LeafSymbol(Token token) : Terminator(token){
 		name = TokenAttrStr[(int)token.getAttribute()];
 	}
 	else if (token.getType() == TokenType::CONSTANT) {
-		double number = constantTable[token.getIndex()];
-		if (number - int(number) == 0) {
-			name = std::to_string(int(number));
-			type = "int";
-		}
-		else {
-			name = std::to_string(float(number));
-			type = "float";
-		}
+		String number = constantTable[token.getIndex()];
+		name = number;
+		type = number.find(".") == number.npos ? "int" : "float";
 	}
 }
 

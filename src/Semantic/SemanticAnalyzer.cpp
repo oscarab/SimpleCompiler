@@ -72,12 +72,21 @@ void IDTable::insertProc(String name, String type, int pos, bool isOuter) {
 /**
  * @brief 寻找符号
  * @param name 名字
+ * @param recall 是否回溯查找
  * @return -1若没找，若找到返回其相对地址
 */
-int IDTable::find(String name) {
-	auto p = table.find(name);
-	if (p == table.end()) return -1;
-	return (*p).second.offset;
+int IDTable::find(String name, bool recall) {
+	IDTable* p = this;
+
+	while (p) {
+		auto val = p->table.find(name);
+		if (val != p->table.end())
+			return (*val).second.offset;
+
+		if (!recall) break;
+		p = p->getPrevious();
+	}
+	return -1;
 }
 
 /**
@@ -85,10 +94,10 @@ int IDTable::find(String name) {
  * @param name 名字
  * @return -100若没找到，若找到返回其对应的next指针位置
 */
-int IDTable::findProc(String name) {
+int IDTable::findProcess(String name) {
 	auto p = table.find(name);
 	if (p == table.end()) return -100;
-	if (!(*p).second.isFunc) return -100;
+	if (!(*p).second.isFunction) return -100;
 	return (*p).second.offset;
 }
 
@@ -101,7 +110,7 @@ int IDTable::findProcessPosition(String name) {
 	IDTable* p = this;
 	while (p) {
 		auto value = p->table.find(name);
-		if (value != p->table.end() && value->second.isFunc) {
+		if (value != p->table.end() && value->second.isFunction) {
 			if (value->second.offset == -1) {
 				return p->position;
 			}
@@ -374,10 +383,15 @@ std::vector<Quaternion>& SemanticAnalyzer::getIntermediateCode() {
 }
 
 void SemanticAnalyzer::emite(String op, String arg1, String arg2, String res) {
+	Variable var1, var2, target;
 	if (op == "jal") {
 		res = std::to_string(nowTable->findProcessPosition(res));
 	}
-	intermediateCode.push_back(Quaternion(op, arg1, arg2, res));
+	var1.name = arg1;
+	var2.name = arg2;
+	target.name = res;
+
+	intermediateCode.push_back(Quaternion(op, var1, var2, target));
 }
 
 int SemanticAnalyzer::nextstat(int next) {
@@ -385,22 +399,18 @@ int SemanticAnalyzer::nextstat(int next) {
 }
 
 void SemanticAnalyzer::backpatch(int index, String addr) {
-	intermediateCode[index].setResult(addr);
+	intermediateCode[index].setResult(Variable{ addr, 0 });
 }
 
 String SemanticAnalyzer::newtemp() {
-	return String("T") + std::to_string(newTempCount++);
+	
+	return String("#T") + std::to_string(newTempCount++);
 }
 
 String SemanticAnalyzer::lookup(String name) {
-	IDTable* p = nowTable;
-	
-	while (p) {
-		int place = p->find(name);
-		if (place != -1) {
-			return name;
-		}
-		p = p->getPrevious();
+	int place = nowTable->find(name, true);
+	if (place != -1) {
+		return name;
 	}
 
 	std::cout << "[ERROR] undeclared identifier: " << name;
@@ -412,7 +422,7 @@ void SemanticAnalyzer::lookupproc(String name, String type) {
 	IDTable* p = nowTable;
 
 	while (p) {
-		int place = p->findProc(name);
+		int place = p->findProcess(name);
 		if (place != -100) {
 
 			bool type_check = false;
@@ -439,7 +449,7 @@ void SemanticAnalyzer::lookupproc(String name, String type) {
 }
 
 void SemanticAnalyzer::checkmain() {
-	int ind = nowTable->findProc("main");
+	int ind = nowTable->findProcess("main");
 	if (ind == -100) {
 		std::cout << "[ERROR] no entry defined";
 		(*out) << "[ERROR] no entry defined";
@@ -450,7 +460,7 @@ void SemanticAnalyzer::checkmain() {
 void SemanticAnalyzer::notlookup(String name) {
 	IDTable* p = nowTable;
 
-	int place = p->find(name);
+	int place = p->find(name, false);
 	if (place != -1) {
 		std::cout << "[ERROR] identifier redefinition: " << name;
 		(*out) << "[ERROR] identifier redefinition: " << name;
@@ -517,19 +527,19 @@ SemanticAnalyzer::~SemanticAnalyzer() {
 
 /******************************四元式成员函数**************************/
 
-Quaternion::Quaternion(String _op, String _arg1, String _arg2, String _result) {
-	operate = _op;
-	arg1 = _arg1;
-	arg2 = _arg2;
-	result = _result;
+Quaternion::Quaternion(String op, Variable arg1, Variable arg2, Variable tartget) {
+	operate = op;
+	parameter1 = arg1;
+	parameter2 = arg2;
+	result = tartget;
 }
 
-void Quaternion::setResult(String result) {
+void Quaternion::setResult(Variable result) {
 	this->result = result;
 }
 
 void Quaternion::output(std::ostream& out) {
-	out << std::setw(8) << operate << " " << std::setw(8) << arg1 << " " << std::setw(8) << arg2 << " " << std::setw(8) << result << std::endl;
+	out << std::setw(8) << operate << " " << std::setw(8) << parameter1.name << " " << std::setw(8) << parameter2.name << " " << std::setw(8) << result.name << std::endl;
 }
 
 /*********************************************************************/

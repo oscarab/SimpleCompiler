@@ -58,6 +58,8 @@ int main(int argc, char* argv[]) {
 
     bool sucess = parser.analysis(&lexer);
 
+    parser.optimize();
+
     // 判断是否输出所有单词
     if (tokens_out && sucess) {
         lexer.writeTokens();
