@@ -33,12 +33,14 @@ double compute(double x, double y, string op) {
 * @brief 使用DAG进行块内优化
 */
 void Block::optimize() {
+	bool opt = false;
 	for (Quaternion& quaternion : innerCode) {
 		if (quaternion.getOperator() == ":="
 			|| quaternion.getOperator() == "+" || quaternion.getOperator() == "-"
 			|| quaternion.getOperator() == "*" || quaternion.getOperator() == "/") {
 
 			int n = 0;	// 结点A将要附上的结点的编号
+			opt = true;
 
 			bool createB = false, createC = false;
 			Variable b = quaternion.getParameter(1);
@@ -46,7 +48,7 @@ void Block::optimize() {
 			auto p = nodeMapping.find(b.name);
 			if (p == nodeMapping.end()) {
 				// 如果NODE(B)不存在就新建一个结点
-				nodes.push_back(Node(b.name));
+				nodes.push_back(Node(b));
 				nodeMapping[b.name] = nodes.size() - 1;
 				createB = true;
 				n = nodes.size() - 1;
@@ -58,7 +60,7 @@ void Block::optimize() {
 				Variable c = quaternion.getParameter(2);
 				if (nodeMapping.find(c.name) == nodeMapping.end()) {
 					// 如果NODE(C)不存在就新建一个结点
-					nodes.push_back(Node(c.name));
+					nodes.push_back(Node(c));
 					nodeMapping[c.name] = nodes.size() - 1;
 					createC = true;
 				}
@@ -85,7 +87,7 @@ void Block::optimize() {
 					string new_name = std::to_string(result);
 					// 如果合并后的结点不存在也新建一个
 					if (nodeMapping.find(new_name) == nodeMapping.end()) {
-						nodes.push_back(Node(new_name));
+						nodes.push_back(Node(Variable{ new_name }));
 						nodeMapping[new_name] = nodes.size() - 1;
 					}
 					n = nodeMapping[new_name];
@@ -105,7 +107,7 @@ void Block::optimize() {
 
 					// 没有公共子表达式就需要新建结点
 					if (!has_common) {
-						Node node(target.name);
+						Node node;
 						node.setOperator(op);
 						node.setLeft(bindex);
 						node.setRight(cindex);
@@ -118,15 +120,41 @@ void Block::optimize() {
 			p = nodeMapping.find(target.name);
 			if (p == nodeMapping.end()) {
 				// 如果NODE(A)不存在则将A附到结点n
+				nodes[n].addSign(target);
 				nodeMapping[target.name] = n;
 			}
 			else {
 				// 否则先将A从原来的结点中去除
 				if (!nodes[p->second].isLeaf())
 					nodes[p->second].remove(target.name);
+				nodes[n].addSign(target);
 				nodeMapping[target.name] = n;
 			}
 		}
+	}
+
+	if (opt) {
+		vector<Quaternion> opt_codes;
+		for (Node& node : nodes) {
+			vector<Variable> vars = node.getSigns();
+			if (!node.isLeaf()) {
+				Variable left = nodes[node.getLeft()].getSigns()[0];
+				Variable right = nodes[node.getRight()].getSigns()[0];
+				opt_codes.push_back(Quaternion(node.getOperator(), left, right, vars[0]));
+			}
+			for (int i = 1; i < vars.size(); i++) {
+				opt_codes.push_back(Quaternion(":=", vars[0], Variable{ "_" }, vars[i]));
+			}
+		}
+		for (Quaternion& quaternion : innerCode) {
+			if (quaternion.getOperator() == ":="
+				|| quaternion.getOperator() == "+" || quaternion.getOperator() == "-"
+				|| quaternion.getOperator() == "*" || quaternion.getOperator() == "/") {
+				continue;
+			}
+			opt_codes.push_back(quaternion);
+		}
+		innerCode = opt_codes;
 	}
 }
 

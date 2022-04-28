@@ -31,6 +31,22 @@ string unwrap(SemanticAnalyzer* analyzer, Property property) {
 	
 }
 
+/*
+* @brief 通过字符串的形式获取接下来指令的地址
+*/
+String convertToPointer(SemanticAnalyzer* analyzer, String text) {
+	if (text == "next1") {
+		return to_string(analyzer->nextstat(1));
+	}
+	else if (text == "next2") {
+		return to_string(analyzer->nextstat(2));
+	}
+	else if (text == "next3") {
+		return to_string(analyzer->nextstat(3));
+	}
+	return text;
+}
+
 /**
  * @brief 创建新临时变量
  * @param analyzer 语义分析器
@@ -145,8 +161,7 @@ void backpatch(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	NonTerminator* des = static_cast<NonTerminator*>(symbol);
 	string quad = unwrap(analyzer, properties[1]);
 
-	if (quad == "next1") quad = to_string(analyzer->nextstat(1));
-	else if (quad == "next2") quad = to_string(analyzer->nextstat(2));
+	quad = convertToPointer(analyzer, quad);
 
 	if (des->getFieldType(properties[0].property) == "vector") {
 		vector<int>* indices = (vector<int>*)des->getFields(properties[0].property);
@@ -172,6 +187,8 @@ void emit(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	string arg1 = unwrap(analyzer, properties[1]);
 	string arg2 = unwrap(analyzer, properties[2]);
 	string res = unwrap(analyzer, properties[3]);
+
+	if (op == "j") res = convertToPointer(analyzer, res);
 	analyzer->emite(op, arg1, arg2, res);
 }
 

@@ -9,21 +9,30 @@ using std::string;
 
 class Node {
 private:
-	std::vector<string> signs;
+	std::vector<Variable> signs;
 	string operate;		// ²Ù×÷·û
 	int left;			// ×óº¢×Ó
 	int right;			// ÓÒº¢×Ó
 public:
-	Node(string sign) : left(-1), right(-1), operate("") { signs.push_back(sign); }
+	Node(Variable sign) : left(-1), right(-1), operate("") { signs.push_back(sign); }
+	Node() : left(-1), right(-1), operate("") {}
 
 	int getLeft() { return left; }
 	int getRight() { return right; }
 	void setLeft(int left) { this->left = left; }
 	void setRight(int right) { this->right = right; }
+	std::vector<Variable>& getSigns() { return signs; }
 
 	string getOperator() { return operate; }
 	void setOperator(string op) { operate = op; }
-	void remove(string sign) { signs.erase(std::find(signs.begin(), signs.end(), sign)); }
+	void remove(string sign) {
+		int pos;
+		for (pos = 0; pos < signs.size(); pos++) {
+			if (signs[pos].name == sign) break;
+		}
+		signs.erase(signs.begin() + pos);
+	}
+	void addSign(Variable sign) { signs.push_back(sign); }
 	bool isLeaf() { return left == -1 && right == -1; }
 };
 
