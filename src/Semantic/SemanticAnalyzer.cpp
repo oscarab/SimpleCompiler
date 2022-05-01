@@ -37,9 +37,14 @@ void packParameter(String str, SemanticAction& action) {
 
 /****************************符号表成员函数****************************/
 
-IDTable::IDTable(IDTable* prev) {
+IDTable::IDTable(IDTable* prev, int offset) {
 	previous = prev;
-	width = 0;
+	width = offset;
+	position = 0;
+}
+
+int IDTable::getWidth() {
+	return width;
 }
 
 /**
@@ -59,7 +64,7 @@ void IDTable::insert(String name, String type, int w) {
  * @param pos 过程的起始位置
  * @param type 返回类型
 */
-void IDTable::insertProc(String name, String type, int pos, bool isOuter) {
+void IDTable::insertProcess(String name, String type, int pos, bool isOuter) {
 	if (isOuter) {
 		table[name] = ValTable{ type, int(next.size() - 1), true };
 	}
@@ -81,7 +86,7 @@ int IDTable::find(String name, bool recall) {
 	while (p) {
 		auto val = p->table.find(name);
 		if (val != p->table.end())
-			return (*val).second.offset;
+			return p->width + (*val).second.offset;
 
 		if (!recall) break;
 		p = p->getPrevious();
@@ -120,6 +125,7 @@ int IDTable::findProcessPosition(String name) {
 		}
 		p = p->getPrevious();
 	}
+	return -1;
 }
 
 /**
@@ -390,6 +396,9 @@ void SemanticAnalyzer::emite(String op, String arg1, String arg2, String res) {
 	var1.name = arg1;
 	var2.name = arg2;
 	target.name = res;
+	var1.address = nowTable->find(var1.name, true);
+	var2.address = nowTable->find(var2.name, true);
+	target.address = nowTable->find(target.name, true);
 
 	intermediateCode.push_back(Quaternion(op, var1, var2, target));
 }
@@ -403,8 +412,9 @@ void SemanticAnalyzer::backpatch(int index, String addr) {
 }
 
 String SemanticAnalyzer::newtemp() {
-	
-	return String("#T") + std::to_string(newTempCount++);
+	String temp = String("#T") + std::to_string(newTempCount++);
+	nowTable->insert(temp, "int", 4);
+	return temp;
 }
 
 String SemanticAnalyzer::lookup(String name) {
@@ -472,22 +482,28 @@ void SemanticAnalyzer::enter(String name, String type, int width) {
 }
 
 void SemanticAnalyzer::enterproc(String name, String type, String pos, String arg) {
-	nowTable->insertProc(name, type, std::stoi(pos), arg == "1");
+	nowTable->insertProcess(name, type, std::stoi(pos), arg == "1");
 	if (arg == "0" && name == "main") {
 		backpatch(0, std::to_string(nextstat(1)));
 	}
 }
 
 void SemanticAnalyzer::mktable() {
-	IDTable* newTable = new IDTable(nowTable);
+	IDTable* newTable = nullptr;
 	if (nowTable != NULL) {
+		newTable = new IDTable(nowTable, nowTable->getWidth());
 		nowTable->addNext(newTable);
+	}
+	else {
+		newTable = new IDTable(nowTable, 0);
 	}
 	nowTable = newTable;
 }
 
 void SemanticAnalyzer::bktable() {
-	nowTable = nowTable->getPrevious();
+	if (nowTable->getPrevious() != NULL) {
+		nowTable = nowTable->getPrevious();
+	}
 }
 
 String SemanticAnalyzer::lookuptype(String name) {

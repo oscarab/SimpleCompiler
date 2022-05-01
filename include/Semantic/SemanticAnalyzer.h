@@ -27,13 +27,14 @@ private:
 
 	std::vector<IDTable*> next;			// 下张符号表
 public:
-	IDTable(IDTable*);
-	void insert(String, String, int);
-	void insertProc(String, String, int, bool);
-	void addNext(IDTable*);
-	int find(String, bool);
-	int findProcess(String);
-	int findProcessPosition(String);
+	IDTable(IDTable*, int);
+	void insert(String, String, int);					// 插入变量
+	void insertProcess(String, String, int, bool);		// 插入函数
+	void addNext(IDTable*);								// 添加下张符号表
+	int find(String, bool);								// 寻找变量
+	int findProcess(String);							// 寻找函数
+	int findProcessPosition(String);					// 寻找函数位置
+	int getWidth();
 	String getType(String);
 	IDTable* getNext(int);
 	IDTable* getPrevious();

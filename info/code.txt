@@ -3,7 +3,7 @@ int  program(int a,int b,int c)
 	// 注释 
 	int i;
 	int j;
-	i=(i<j)+i;
+	i=(i<j && a < b)+i;
 	i=i+j;
 	if(a>(b+c))
 	{
@@ -13,10 +13,11 @@ int  program(int a,int b,int c)
 	}
 	else
 	{
+	int test;
 	/* dasd
 	dadw
 		da */
-		if (j!=a&&j>a){
+		if (j!=a&&j>a){ int test2;
 		j=a;}
 	}
 	while(i<=100)
