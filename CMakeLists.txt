@@ -12,6 +12,7 @@ aux_source_directory(./src/Parser DIR_TOOT_SRCS)
 aux_source_directory(./src/Semantic DIR_TOOT_SRCS)
 aux_source_directory(./src/Output DIR_TOOT_SRCS)
 aux_source_directory(./src/Optimization DIR_TOOT_SRCS)
+aux_source_directory(./src/Generator DIR_TOOT_SRCS)
 
 # 将源代码添加到此项目的可执行文件。
 add_executable (${PROJECT_NAME} ${DIR_TOOT_SRCS})

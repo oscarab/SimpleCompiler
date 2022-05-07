@@ -34,6 +34,8 @@ double compute(double x, double y, string op) {
 */
 void Block::optimize() {
 	bool opt = false;
+	string label = innerCode[0].getLabel();		// 记录下标签
+
 	for (Quaternion& quaternion : innerCode) {
 		if (quaternion.getOperator() == ":="
 			|| quaternion.getOperator() == "+" || quaternion.getOperator() == "-"
@@ -156,6 +158,11 @@ void Block::optimize() {
 		}
 		innerCode = opt_codes;
 	}
+	innerCode[0].setLabel(label);
+}
+
+std::vector<Quaternion>& Block::getInnerCode() {
+	return innerCode;
 }
 
 /*
@@ -190,9 +197,10 @@ void Optimization::splitBlocks(vector<Quaternion>& quaternions) {
 		}
 	}
 	enter_flag[0] = 1;
+	generateLabel(quaternions);
 
 	for (int i = 0; i < q_size; i++) {
-		if (enter_flag[i] != 1) continue;
+		if ((enter_flag[i] & 1) == 0) continue;
 
 		int j = i;
 		Block block;
@@ -216,8 +224,36 @@ void Optimization::splitBlocks(vector<Quaternion>& quaternions) {
 	}
 }
 
+/*
+* @brief 将中间代码中的地址跳跃改为标签
+*/
+void Optimization::generateLabel(vector<Quaternion>& quaternions) {
+	int count = 1;
+	string prefix = "L";
+
+	for (Quaternion& quaternion : quaternions) {
+		if (quaternion.isJump()) {
+			int addr = quaternion.getAddress();
+
+			if (quaternions[addr].getLabel() == "") {
+				string label = prefix + std::to_string(count);
+				quaternion.setResult(Variable{ label });
+				quaternions[addr].setLabel(label);
+				count++;
+			}
+			else {
+				quaternion.setResult(Variable{ quaternions[addr].getLabel() });
+			}
+		}
+	}
+}
+
 void Optimization::optimize() {
 	for (Block& block : blocks) {
 		block.optimize();
 	}
+}
+
+vector<Block>& Optimization::getBlocks() {
+	return blocks;
 }

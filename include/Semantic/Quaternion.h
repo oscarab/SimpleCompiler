@@ -11,6 +11,7 @@ struct Variable {
 
 class Quaternion {
 private:
+	std::string label;
 	std::string operate;
 	Variable parameter1;
 	Variable parameter2;
@@ -18,7 +19,10 @@ private:
 public:
 	Quaternion(std::string, Variable, Variable, Variable);
 
+	void setLabel(std::string);
+	std::string getLabel();
 	void setResult(Variable);
+	bool isJump();
 	void output(std::ostream&);
 
 	std::string getOperator() {

@@ -44,6 +44,7 @@ private:
 public:
 	void append(Quaternion);
 	void optimize();
+	std::vector<Quaternion>& getInnerCode();
 };
 
 #endif // !BLOCK

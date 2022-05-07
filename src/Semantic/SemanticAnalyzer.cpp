@@ -85,9 +85,13 @@ int IDTable::find(String name, bool recall) {
 
 	while (p) {
 		auto val = p->table.find(name);
-		if (val != p->table.end())
-			return p->width + (*val).second.offset;
-
+		if (val != p->table.end()) {
+			if (p->getPrevious() == NULL)
+				return val->second.offset;
+			else
+				return p->getPrevious()->width + val->second.offset;
+		}
+			
 		if (!recall) break;
 		p = p->getPrevious();
 	}
@@ -548,10 +552,25 @@ Quaternion::Quaternion(String op, Variable arg1, Variable arg2, Variable tartget
 	parameter1 = arg1;
 	parameter2 = arg2;
 	result = tartget;
+	label = "";
 }
 
 void Quaternion::setResult(Variable result) {
 	this->result = result;
+}
+
+void Quaternion::setLabel(String label) {
+	this->label = label;
+}
+
+std::string Quaternion::getLabel() {
+	return label;
+}
+
+bool Quaternion::isJump() {
+	return (operate == ">" || operate == "<" || operate == "==" || operate == "!="
+		|| operate == ">=" || operate == "<=" || operate == "j"
+		|| operate == "jal");
 }
 
 void Quaternion::output(std::ostream& out) {

@@ -5,6 +5,7 @@ int  program(int a,int b,int c)
 	int j;
 	i=(i<j && a < b)+i;
 	i=i+j;
+	i=3+4;
 	if(a>(b+c))
 	{
 		j=a+

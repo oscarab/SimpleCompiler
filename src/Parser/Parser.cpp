@@ -150,10 +150,26 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 	return false;
 }
 
+/*
+* @brief 对中间代码进行优化
+*/
 bool Parser::optimize() {
 	optimization.splitBlocks(analyzer.getIntermediateCode());
 	optimization.optimize();
 	return true;
+}
+
+/*
+* @brief 生成目标代码
+*/
+void Parser::generate() {
+	generator.init();
+	vector<Block>& blocks = optimization.getBlocks();
+	for (Block& block : blocks) {
+		generator.generateBatch(block.getInnerCode());
+	}
+
+	generator.out();
 }
 
 /**

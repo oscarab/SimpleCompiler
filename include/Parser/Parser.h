@@ -5,6 +5,7 @@
 #include "Lexer/Lexer.h"
 #include "Semantic/SemanticAnalyzer.h"
 #include "Optimization/Optimization.h"
+#include "Generator/Generator.h"
 
 struct Action;
 class SyntaxNode;
@@ -78,6 +79,7 @@ private:
 	SyntaxTree tree;					// 语法树
 	SemanticAnalyzer analyzer;			// 语义分析器
 	Optimization optimization;			// 优化器
+	Generator generator;				// Mips汇编代码生成器
 
 	std::vector<int> stateStack;		// 状态栈
 	std::vector<Symbol*> symbolStack;	// 符号栈
@@ -88,6 +90,7 @@ public:
 	void createTable();								// 建立分析表
 	bool analysis(Lexical::Lexer*);					// 开始语法分析
 	bool optimize();								// 优化
+	void generate();								// 生成目标代码
 
 	SyntaxTree* getTree();							// 获取语法树
 	void writeTable();								// 输出分析表
