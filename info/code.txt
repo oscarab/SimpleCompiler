@@ -1,43 +1,27 @@
-int  program(int a,int b,int c)
-{
-	// 注释 
-	int i;
-	int j;
-	i=(i<j && a < b)+i;
-	i=i+j;
-	i=3+4;
-	if(a>(b+c))
-	{
-		j=a+
-		
-		a*b*c;
-	}
-	else
-	{
-	int test;
-	/* dasd
-	dadw
-		da */
-		if (j!=a&&j>a){ int test2;
-		j=a;}
-	}
-	while(i<=100)
-	{
-		i=j*2;
+int test(int i, int j, int k) {
+	while (i < j) {
+		int mid;
+		mid = (i + j) / 2;
+		if (mid == k) {
+			return mid;
+		} 
+		if (mid < k) {
+			i = mid + 1;
+		} else {
+			j = mid - 1;
+		}
 	}
 	return i;
 }
 
-void show(float d) {
-	int a;
-	a = a + 1;
-	return;
-}
-
 int main() {
 	int a;
-	float b;
-	a = program(1, 2, 3);
-	show(b);
-	return 1;
+	int b;
+	int c;
+	a = 1;
+	b = 100;
+	c = 66;
+	int d;
+	d = test(a, b, c);
+	return 0;
 }

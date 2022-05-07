@@ -39,6 +39,11 @@ void Generator::addInstruction(const string& instr) {
 void Generator::freeAll() {
 	while (!occupy.empty()) {
 		free.push_back(occupy.back());
+
+		Register& regist = occupy.back();
+		if (!std::isdigit(regist.var.name[0]))
+			addInstruction(Instruction[SW] + "\t" + regist.reg + ",\t" + std::to_string(regist.var.address + 8) + "($fp)");
+
 		occupy.pop_back();
 	}
 }
@@ -89,10 +94,11 @@ string Generator::findValue(Variable& var, bool load) {
 			return occupy[i].reg;
 	}
 
+	if (var.name == "0") return "$zero";
+	if (var.name == "1") return "$s0";
+	if (var.name == "$v0") return "$v0";
 	string reg = findFreeRegister(var);
 	if (std::isdigit(var.name[0])) {
-		if (var.name == "0") return "$zero";
-		if (var.name == "1") return "$s0";
 		addInstruction(Instruction[ADDI] + "\t" + reg + ",\t$zero,\t" + var.name);
 	}
 	else if (load) {
@@ -104,22 +110,27 @@ string Generator::findValue(Variable& var, bool load) {
 /*
 * @brief 由中间代码生成Mips汇编
 */
-void Generator::generateBatch(vector<Quaternion>& quaternions) {
+void Generator::generateBatch(vector<Quaternion>& quaternions, unordered_set<string>& entry) {
 	int push = 0;
+	label = quaternions[0].getLabel();
+	if (entry.count(label)) {
+		addInstruction(Instruction[SW] + "\t$ra,\t4($fp)");
+	}
 	for (Quaternion& quaternion : quaternions) {
 		string op = quaternion.getOperator();
-		label = quaternion.getLabel();
 
 		if (op == "j") {
+			freeAll();
 			addInstruction(op + "\t" + quaternion.getResult().name);
 			addInstruction(Instruction[NOP]);
 		}
 		else if (op == "jal") {
+			freeAll();
 			addInstruction(Instruction[SW] + "\t$fp,\t4($sp)");			// 保存当前函数栈帧
-			addInstruction(op + "\t" + quaternion.getResult().name);	// 调用函数
-			addInstruction(Instruction[NOP]);
 			addInstruction(Instruction[ADDI] + "\t$fp,\t$sp,\t4");		// 更新栈帧和栈顶指针
 			addInstruction(Instruction[ADDI] + "\t$sp,\t$sp,\t" + std::to_string(push + 4));
+			addInstruction(op + "\t" + quaternion.getResult().name);	// 调用函数
+			addInstruction(Instruction[NOP]);
 			push = 0;
 		}
 		else if (op == "par") {
@@ -128,13 +139,12 @@ void Generator::generateBatch(vector<Quaternion>& quaternions) {
 			push += 4;
 		}
 		else if (op == "jr") {
+			freeAll();
 			addInstruction(Instruction[LW] + "\t$ra,\t4($fp)");			// 获取返回地址
 			addInstruction(Instruction[SUBI] + "\t$sp,\t$fp,\t4");		// 更新栈顶指针
 			addInstruction(Instruction[LW] + "\t$fp,\t0($fp)");			// 回退到上一个栈帧
 			addInstruction(op + "\t$ra");
 			addInstruction(Instruction[NOP]);
-
-			freeAll();
 		}
 		else if (op == "dec") {
 			addInstruction(Instruction[ADDI] + "\t$sp,\t$sp,\t" + quaternion.getResult().name);
@@ -142,6 +152,7 @@ void Generator::generateBatch(vector<Quaternion>& quaternions) {
 		else if (op == ">") {
 			string reg1 = findValue(quaternion.getParameter(1));
 			string reg2 = findValue(quaternion.getParameter(2));
+			freeAll();
 			addInstruction(Instruction[SLT] + "\t$at,\t" + reg2 + ",\t" + reg1);
 			addInstruction(Instruction[BNE] + "\t$zero,\t$at,\t" + quaternion.getResult().name);
 			addInstruction(Instruction[NOP]);
@@ -149,6 +160,7 @@ void Generator::generateBatch(vector<Quaternion>& quaternions) {
 		else if (op == "<") {
 			string reg1 = findValue(quaternion.getParameter(1));
 			string reg2 = findValue(quaternion.getParameter(2));
+			freeAll();
 			addInstruction(Instruction[SLT] + "\t$at,\t" + reg1 + ",\t" + reg2);
 			addInstruction(Instruction[BNE] + "\t$zero,\t$at,\t" + quaternion.getResult().name);
 			addInstruction(Instruction[NOP]);
@@ -156,18 +168,21 @@ void Generator::generateBatch(vector<Quaternion>& quaternions) {
 		else if (op == "==") {
 			string reg1 = findValue(quaternion.getParameter(1));
 			string reg2 = findValue(quaternion.getParameter(2));
+			freeAll();
 			addInstruction(Instruction[BEQ] + "\t" + reg1 + ",\t" + reg2 + ",\t" + quaternion.getResult().name);
 			addInstruction(Instruction[NOP]);
 		}
 		else if (op == "!=") {
 			string reg1 = findValue(quaternion.getParameter(1));
 			string reg2 = findValue(quaternion.getParameter(2));
+			freeAll();
 			addInstruction(Instruction[BNE] + "\t" + reg1 + ",\t" + reg2 + ",\t" + quaternion.getResult().name);
 			addInstruction(Instruction[NOP]);
 		}
 		else if (op == ">=") {
 			string reg1 = findValue(quaternion.getParameter(1));
 			string reg2 = findValue(quaternion.getParameter(2));
+			freeAll();
 			addInstruction(Instruction[SLT] + "\t$at,\t" + reg1 + ",\t" + reg2);
 			addInstruction(Instruction[BEQ] + "\t$zero,\t$at,\t" + quaternion.getResult().name);
 			addInstruction(Instruction[NOP]);
@@ -175,6 +190,7 @@ void Generator::generateBatch(vector<Quaternion>& quaternions) {
 		else if (op == "<=") {
 			string reg1 = findValue(quaternion.getParameter(1));
 			string reg2 = findValue(quaternion.getParameter(2));
+			freeAll();
 			addInstruction(Instruction[SLT] + "\t$at,\t" + reg2 + ",\t" + reg1);
 			addInstruction(Instruction[BEQ] + "\t$zero,\t$at,\t" + quaternion.getResult().name);
 			addInstruction(Instruction[NOP]);
@@ -208,6 +224,9 @@ void Generator::generateBatch(vector<Quaternion>& quaternions) {
 			string result = findValue(quaternion.getResult(), false);
 			addInstruction(Instruction[OR] + "\t" + result + ",\t$zero,\t" + reg);
 		}
+	}
+	if (!quaternions.back().isJump() && quaternions.back().getOperator() != "jr") {
+		freeAll();
 	}
 }
 

@@ -137,6 +137,16 @@ void Block::optimize() {
 
 	if (opt) {
 		vector<Quaternion> opt_codes;
+
+		int declare = 0;
+		for (Quaternion& quaternion : innerCode) {
+			if (quaternion.getOperator() == "dec") {
+				declare += quaternion.getAddress();
+			}
+		}
+		if (declare) opt_codes.push_back(Quaternion("dec", Variable{ "_" }, Variable{ "_"}, Variable{ std::to_string(declare) }));
+
+		// 按结点的生成顺序导出优化过的中间代码
 		for (Node& node : nodes) {
 			vector<Variable> vars = node.getSigns();
 			if (!node.isLeaf()) {
@@ -149,16 +159,14 @@ void Block::optimize() {
 			}
 		}
 		for (Quaternion& quaternion : innerCode) {
-			if (quaternion.getOperator() == ":="
-				|| quaternion.getOperator() == "+" || quaternion.getOperator() == "-"
-				|| quaternion.getOperator() == "*" || quaternion.getOperator() == "/") {
-				continue;
+			if (quaternion.getOperator() == "par"
+				|| quaternion.getOperator() == "jr" || quaternion.isJump()) {
+				opt_codes.push_back(quaternion);
 			}
-			opt_codes.push_back(quaternion);
 		}
 		innerCode = opt_codes;
+		innerCode[0].setLabel(label);
 	}
-	innerCode[0].setLabel(label);
 }
 
 std::vector<Quaternion>& Block::getInnerCode() {
@@ -244,6 +252,9 @@ void Optimization::generateLabel(vector<Quaternion>& quaternions) {
 			else {
 				quaternion.setResult(Variable{ quaternions[addr].getLabel() });
 			}
+			if (quaternion.getOperator() == "jal") {
+				functionEntry.insert(quaternion.getResult().name);
+			}
 		}
 	}
 }
@@ -256,4 +267,8 @@ void Optimization::optimize() {
 
 vector<Block>& Optimization::getBlocks() {
 	return blocks;
+}
+
+unordered_set<string>& Optimization::getFunctionEntry() {
+	return functionEntry;
 }

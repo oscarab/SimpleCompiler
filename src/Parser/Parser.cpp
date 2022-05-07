@@ -166,7 +166,7 @@ void Parser::generate() {
 	generator.init();
 	vector<Block>& blocks = optimization.getBlocks();
 	for (Block& block : blocks) {
-		generator.generateBatch(block.getInnerCode());
+		generator.generateBatch(block.getInnerCode(), optimization.getFunctionEntry());
 	}
 
 	generator.out();
