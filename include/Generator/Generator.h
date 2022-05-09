@@ -21,8 +21,9 @@ private:
 	vector<Register> occupy;
 	string label;
 public:
-	void init();
+	void init(unsigned int);
 	void freeAll();
+	string getVariableAddress(int);
 	string findFreeRegister(Variable&);			// 寻找一个空闲的寄存器
 	string findValue(Variable&, bool=true);		// 寻找变量所在的寄存器（若为常数也进行寻找）
 	void addInstruction(const string&);

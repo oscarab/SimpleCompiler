@@ -71,6 +71,7 @@ public:
 	void outputIntermediateCode(std::ostream&);
 
 	std::vector<Quaternion>& getIntermediateCode();
+	unsigned int getGlobalSize();
 
 
 	/*************语义动作的实现*************/

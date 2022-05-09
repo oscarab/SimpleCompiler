@@ -9,16 +9,18 @@ enum InstructionName
 {
 	ADD, SUB, ADDI, SUBI, MUL, DIV, AND, OR, LW, SW, J, JAL, JR, BEQ, BNE, SLT, NOP
 };
+const unsigned int START = 268500992;
 
 /*
 * @brief 初始化代码生成器
 */
-void Generator::init() {
-	for (int i = 0; i < 10; i++) {
+void Generator::init(unsigned int global) {
+	for (int i = 9; i >= 0; i--) {
 		free.push_back(Register{ "$t" + std::to_string(i) });
 	}
-	addInstruction(Instruction[ADDI] + "\t$fp,\t$zero,\t0");
-	addInstruction(Instruction[ADDI] + "\t$sp,\t$zero,\t4");
+	addInstruction(Instruction[ADDI] + "\t$gp,\t$zero,\t" + std::to_string(START));
+	addInstruction(Instruction[ADDI] + "\t$fp,\t$zero,\t" + std::to_string(START + global));
+	addInstruction(Instruction[ADDI] + "\t$sp,\t$zero,\t" + std::to_string(START + global + 4));
 	addInstruction(Instruction[ADDI] + "\t$s0,\t$zero,\t1");
 }
 
@@ -41,10 +43,22 @@ void Generator::freeAll() {
 		free.push_back(occupy.back());
 
 		Register& regist = occupy.back();
-		if (!std::isdigit(regist.var.name[0]))
-			addInstruction(Instruction[SW] + "\t" + regist.reg + ",\t" + std::to_string(regist.var.address + 8) + "($fp)");
+		if (!std::isdigit(regist.var.name[0]) && regist.var.name[0] != '#')
+			addInstruction(Instruction[SW] + "\t" + regist.reg + ",\t" + getVariableAddress(regist.var.address));
 
 		occupy.pop_back();
+	}
+}
+
+/*
+* 根据相对地址获取变量位置
+*/
+string Generator::getVariableAddress(int addr) {
+	if (addr >= 0) {
+		return std::to_string(addr + 8) + "($fp)";
+	}
+	else {
+		return std::to_string(-addr - 100) + "($gp)";
 	}
 }
 
@@ -68,14 +82,11 @@ string Generator::findFreeRegister(Variable& var) {
 			}
 		}
 
-		if (temp_place == -1) {
-			temp_place = 0;
-			Variable& old_var = occupy[temp_place].var;
-			string offet = std::to_string(old_var.address + 8);
+		temp_place = temp_place  == -1 ? 0 : temp_place;
+		Variable& old_var = occupy[temp_place].var;
 
-			// 将被抢占的变量存到内存里
-			addInstruction(Instruction[SW] + "\t" + occupy[temp_place].reg + ",\t" + offet + "($fp)");
-		}
+		// 将被抢占的变量存到内存里
+		addInstruction(Instruction[SW] + "\t" + occupy[temp_place].reg + ",\t" + getVariableAddress(old_var.address));
 
 		// 将需要的变量读到寄存器
 		occupy[temp_place].var = var;
@@ -102,7 +113,7 @@ string Generator::findValue(Variable& var, bool load) {
 		addInstruction(Instruction[ADDI] + "\t" + reg + ",\t$zero,\t" + var.name);
 	}
 	else if (load) {
-		addInstruction(Instruction[LW] + "\t" + reg + ",\t" + std::to_string(var.address + 8) + "($fp)");
+		addInstruction(Instruction[LW] + "\t" + reg + ",\t" + getVariableAddress(var.address));
 	}
 	return reg;
 }

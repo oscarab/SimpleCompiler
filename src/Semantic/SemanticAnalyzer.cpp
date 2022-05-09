@@ -35,167 +35,6 @@ void packParameter(String str, SemanticAction& action) {
 	}
 }
 
-/****************************符号表成员函数****************************/
-
-IDTable::IDTable(IDTable* prev, int offset) {
-	previous = prev;
-	width = offset;
-	position = 0;
-}
-
-int IDTable::getWidth() {
-	return width;
-}
-
-/**
- * @brief 往符号表中插入新符号
- * @param name 名字
- * @param type 类型
- * @param w 宽度
-*/
-void IDTable::insert(String name, String type, int w) {
-	table[name] = ValTable{ type, width, false };
-	width += w;
-}
-
-/**
- * @brief 往符号表中插入新过程标识符
- * @param name 名字
- * @param pos 过程的起始位置
- * @param type 返回类型
-*/
-void IDTable::insertProcess(String name, String type, int pos, bool isOuter) {
-	if (isOuter) {
-		table[name] = ValTable{ type, int(next.size() - 1), true };
-	}
-	else {
-		table[name] = ValTable{ type, -1, true };
-		position = pos;
-	}
-}
-
-/**
- * @brief 寻找符号
- * @param name 名字
- * @param recall 是否回溯查找
- * @return -1若没找，若找到返回其相对地址
-*/
-int IDTable::find(String name, bool recall) {
-	IDTable* p = this;
-
-	while (p) {
-		auto val = p->table.find(name);
-		if (val != p->table.end()) {
-			if (p->getPrevious() == NULL)
-				return val->second.offset;
-			else
-				return p->getPrevious()->width + val->second.offset;
-		}
-			
-		if (!recall) break;
-		p = p->getPrevious();
-	}
-	return -1;
-}
-
-/**
- * @brief 寻找函数过程
- * @param name 名字
- * @return -100若没找到，若找到返回其对应的next指针位置
-*/
-int IDTable::findProcess(String name) {
-	auto p = table.find(name);
-	if (p == table.end()) return -100;
-	if (!(*p).second.isFunction) return -100;
-	return (*p).second.offset;
-}
-
-/**
- * @brief 寻找函数过程的起始地址
- * @param name 名字
- * @return 函数过程的起始地址
-*/
-int IDTable::findProcessPosition(String name) {
-	IDTable* p = this;
-	while (p) {
-		auto value = p->table.find(name);
-		if (value != p->table.end() && value->second.isFunction) {
-			if (value->second.offset == -1) {
-				return p->position;
-			}
-			else {
-				return p->next[value->second.offset]->position;
-			}
-		}
-		p = p->getPrevious();
-	}
-	return -1;
-}
-
-/**
- * @brief 获取标识符的类型
- * @param name 名字
- * @return 类型
-*/
-String IDTable::getType(String name) {
-	auto p = table.find(name);
-	if (p == table.end()) return "";
-	return (*p).second.type;
-}
-
-IDTable* IDTable::getPrevious() { 
-	return previous; 
-}
-
-IDTable* IDTable::getNext(int num) {
-	return next[num];
-}
-
-void IDTable::addNext(IDTable* next_table) {
-	next.push_back(next_table);
-}
-
-/**
- * @brief 添加参数（该符号表表示一个函数）
- * @param type 参数类型
-*/
-void IDTable::addParameter(String type) {
-	parameters.push_back(type);
-}
-
-/**
- * @brief 检查调用函数时的类型是否匹配
- * @param type 实参类型
- * @return 是否匹配
-*/
-bool IDTable::checkParameters(String type) {
-	std::vector<String> args;
-	size_t start = 0, end = type.find(";", start);
-
-	while (end != type.npos) {
-		args.push_back(type.substr(start, end - start));
-		start = end + 1;
-		if (start >= type.size()) break;
-		end = type.find(";", start);
-	}
-	int size = args.size();
-	if (parameters.size() != size) return false;
-
-	for (int i = 0; i < size; i++) {
-		if (parameters[i] != args[i]) return false;
-	}
-	return true;
-}
-
-IDTable::~IDTable() {
-	for (IDTable* n : next) {
-		delete n;
-	}
-}
-
-/*********************************************************************/
-
-
 
 /****************************语义分析器成员函数*************************/
 
@@ -392,6 +231,10 @@ std::vector<Quaternion>& SemanticAnalyzer::getIntermediateCode() {
 	return intermediateCode;
 }
 
+unsigned int SemanticAnalyzer::getGlobalSize() {
+	return nowTable->getWidth();
+}
+
 void SemanticAnalyzer::emite(String op, String arg1, String arg2, String res) {
 	Variable var1, var2, target;
 	if (op == "jal") {
@@ -481,6 +324,7 @@ void SemanticAnalyzer::notlookup(String name) {
 		exit(0);
 	}
 }
+
 void SemanticAnalyzer::enter(String name, String type, int width) {
 	nowTable->insert(name, type, width);
 }
@@ -495,7 +339,8 @@ void SemanticAnalyzer::enterproc(String name, String type, String pos, String ar
 void SemanticAnalyzer::mktable() {
 	IDTable* newTable = nullptr;
 	if (nowTable != NULL) {
-		newTable = new IDTable(nowTable, nowTable->getWidth());
+		int offset = nowTable->getPrevious() != NULL ? nowTable->getWidth() : 0;
+		newTable = new IDTable(nowTable, offset);
 		nowTable->addNext(newTable);
 	}
 	else {

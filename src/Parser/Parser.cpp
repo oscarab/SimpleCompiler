@@ -163,7 +163,7 @@ bool Parser::optimize() {
 * @brief 生成目标代码
 */
 void Parser::generate() {
-	generator.init();
+	generator.init(analyzer.getGlobalSize());
 	vector<Block>& blocks = optimization.getBlocks();
 	for (Block& block : blocks) {
 		generator.generateBatch(block.getInnerCode(), optimization.getFunctionEntry());
