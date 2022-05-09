@@ -25,7 +25,7 @@ enum class TokenAttribute {
 	Add, Minus, Multiply, Divide, Assign, Equal, Greater, Less, Gequal, Lequal, Nequal,
 	AND, OR,
 	Comma, Semicolon,
-	LeftBrace, RightBrace, LeftBracket, RightBracket,
+	LeftBrace, RightBrace, LeftBracket, RightBracket, LeftSquare, RightSquare,
 	RealConstant, RealID, None
 };
 

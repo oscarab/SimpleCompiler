@@ -11,6 +11,7 @@ Program EpsilonSymbol
 内部语句列表 EpsilonSymbol
 内部语句 EpsilonSymbol
 内部变量声明 EpsilonSymbol
+维度列表声明 VariableSymbol
 赋值语句 EpsilonSymbol
 return语句 EpsilonSymbol
 while语句 EpsilonSymbol

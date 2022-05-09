@@ -383,6 +383,11 @@ void SemanticAnalyzer::addpara(String type) {
 	nowTable->addParameter(type);
 }
 
+void SemanticAnalyzer::enterarray(String name, String type, int width, int dim) {
+	nowTable->insertArray(name, type, width, dim);
+	emite("dec", "_", "_", std::to_string(width));
+}
+
 SemanticAnalyzer::~SemanticAnalyzer() {
 	delete nowTable;
 }

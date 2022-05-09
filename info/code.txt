@@ -1,6 +1,7 @@
 int global;
 
 int test(int i, int j, int k) {
+	int test[2][3];
 	while (i < j) {
 		int mid;
 		mid = (i + j) / 2;

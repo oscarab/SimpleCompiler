@@ -275,6 +275,8 @@ Token Scanner::scan() {
 	else if (buffer[scanPoint] == '}') return Token(TokenType::BRACKET, TokenAttribute::RightBrace, row, column);
 	else if (buffer[scanPoint] == '(') return Token(TokenType::BRACKET, TokenAttribute::LeftBracket, row, column);
 	else if (buffer[scanPoint] == ')') return Token(TokenType::BRACKET, TokenAttribute::RightBracket, row, column);
+	else if (buffer[scanPoint] == '[') return Token(TokenType::BRACKET, TokenAttribute::LeftSquare, row, column);
+	else if (buffer[scanPoint] == ']') return Token(TokenType::BRACKET, TokenAttribute::RightSquare, row, column);
 	else {
 		// ¥ÌŒÛ¥¶¿Ì
 		return Token(TokenType::FAIL, TokenAttribute::None, row, column);

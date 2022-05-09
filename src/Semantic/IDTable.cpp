@@ -17,7 +17,7 @@ int IDTable::getWidth() {
  * @param w 宽度
 */
 void IDTable::insert(String name, String type, int w) {
-	table[name] = ValTable{ type, width, false };
+	table[name] = ValTable{ type, width, 0 };
 	width += w;
 }
 
@@ -29,12 +29,24 @@ void IDTable::insert(String name, String type, int w) {
 */
 void IDTable::insertProcess(String name, String type, int pos, bool isOuter) {
 	if (isOuter) {
-		table[name] = ValTable{ type, int(next.size() - 1), true };
+		table[name] = ValTable{ type, int(next.size() - 1), 1 };
 	}
 	else {
-		table[name] = ValTable{ type, -1, true };
+		table[name] = ValTable{ type, -1, 1 };
 		position = pos;
 	}
+}
+
+/**
+ * @brief 往符号表中插入新数组符号
+ * @param name 名字
+ * @param type 类型
+ * @param w 宽度
+ * @param dim 维数
+*/
+void IDTable::insertArray(String name, String type, int w, int dim) {
+	table[name] = ValTable{ type, width, dim };
+	width += w;
 }
 
 /**
@@ -71,7 +83,7 @@ int IDTable::find(String name, bool recall) {
 int IDTable::findProcess(String name) {
 	auto p = table.find(name);
 	if (p == table.end()) return -100;
-	if (!(*p).second.isFunction) return -100;
+	if ((*p).second.valType != 1) return -100;
 	return (*p).second.offset;
 }
 
@@ -84,7 +96,7 @@ int IDTable::findProcessPosition(String name) {
 	IDTable* p = this;
 	while (p) {
 		auto value = p->table.find(name);
-		if (value != p->table.end() && value->second.isFunction) {
+		if (value != p->table.end() && value->second.valType == 1) {
 			if (value->second.offset == -1) {
 				return p->position;
 			}

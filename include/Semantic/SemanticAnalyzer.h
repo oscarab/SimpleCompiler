@@ -13,7 +13,7 @@ class Symbol;
 struct ValTable {
 	String type;
 	int offset;
-	bool isFunction;
+	int valType;
 };
 
 class IDTable {
@@ -30,6 +30,7 @@ public:
 	IDTable(IDTable*, int);
 	void insert(String, String, int);					// 插入变量
 	void insertProcess(String, String, int, bool);		// 插入函数
+	void insertArray(String, String, int, int);			// 插入数组
 	void addNext(IDTable*);								// 添加下张符号表
 	int find(String, bool);								// 寻找变量
 	int findProcess(String);							// 寻找函数
@@ -90,6 +91,7 @@ public:
 	String lookuptype(String);
 	void checktype(String, String);
 	void addpara(String);
+	void enterarray(String, String, int, int);
 
 	~SemanticAnalyzer();
 };

@@ -283,6 +283,48 @@ void merge(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	des_list->insert(des_list->end(), list2->begin(), list2->end());
 }
 
+/**
+ * @brief 加入维度
+ * @param analyzer
+ * @param properties
+*/
+void adddim(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	NonTerminator* arg1 = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[0].index));
+	vector<int>* dim_list = (vector<int>*) arg1->getFields(properties[0].property);
+	string place = unwrap(analyzer, properties[1]);
+	string type = unwrap(analyzer, properties[2]);
+
+	if (type != "int") {
+		std::cout << "dim type must be int";
+		exit(0);
+	}
+	if (!std::isdigit(place[0])) {
+		std::cout << "dim must be const";
+		exit(0);
+	}
+	dim_list->push_back(std::stoi(place));
+}
+
+/**
+ * @brief 加入一个数组到符号表
+ * @param analyzer
+ * @param properties
+*/
+void enterarray(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	NonTerminator* arg3 = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[2].index));
+
+	string name = unwrap(analyzer, properties[0]);
+	string type = unwrap(analyzer, properties[1]);
+	vector<int>* dims = (vector<int>*) arg3->getFields(properties[2].property);
+	int dim = dims->size();
+	int width = 4;
+	for (int i = 0; i < dim; i++) {
+		width *= dims->at(i);
+	}
+
+	analyzer->enterarray(name, type, width, dim);
+}
+
 unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPointer = {
 	{"newtemp", newtemp},
 	{"lookup", lookup},
@@ -301,5 +343,7 @@ unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> funct
 	{"addpara", addpara},
 	{"addarg", addarg},
 	{"makelist", makelist},
-	{"merge", merge}
+	{"merge", merge},
+	{"adddim", adddim},
+	{"enterarray", enterarray}
 };
