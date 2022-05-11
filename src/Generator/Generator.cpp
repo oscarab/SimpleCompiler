@@ -22,6 +22,10 @@ void Generator::init(unsigned int global) {
 	addInstruction(Instruction[ADDI] + "\t$fp,\t$zero,\t" + std::to_string(START + global));
 	addInstruction(Instruction[ADDI] + "\t$sp,\t$zero,\t" + std::to_string(START + global + 4));
 	addInstruction(Instruction[ADDI] + "\t$s0,\t$zero,\t1");
+	addInstruction(Instruction[ADDI] + "\t$s1,\t$zero,\t2");
+	addInstruction(Instruction[ADDI] + "\t$s2,\t$zero,\t3");
+	addInstruction(Instruction[ADDI] + "\t$s3,\t$zero,\t4");
+	addInstruction(Instruction[ADDI] + "\t$s4,\t$zero,\t5");
 }
 
 /*
@@ -40,12 +44,24 @@ void Generator::addInstruction(const string& instr) {
 */
 void Generator::freeAll() {
 	while (!occupy.empty()) {
-		free.push_back(occupy.back());
-
 		Register& regist = occupy.back();
-		if (!std::isdigit(regist.var.name[0]) && regist.var.name[0] != '#')
-			addInstruction(Instruction[SW] + "\t" + regist.reg + ",\t" + getVariableAddress(regist.var.address));
+		Variable& var = regist.var;
 
+		if (var.name.find("ARRAY/") != var.name.npos) {
+			// 是一个数组变量，需要获得存储下标的寄存器
+			string index_reg = getArrayIndexReg(var);
+			addInstruction(Instruction[SW] + "\t" + regist.reg + ",\t" + index_reg);
+			if (occupy.back().reg != regist.reg) {
+				free.push_back(occupy.back());
+				occupy.pop_back();
+			}
+		}
+		else {
+			if (!std::isdigit(var.name[0]) && var.name[0] != '#')
+				addInstruction(Instruction[SW] + "\t" + regist.reg + ",\t" + getVariableAddress(var.address));
+		}
+
+		free.push_back(occupy.back());
 		occupy.pop_back();
 	}
 }
@@ -58,18 +74,24 @@ string Generator::getArrayIndexReg(Variable& var) {
 	int last = var.name.find_last_of("/");
 	string offset_val = var.name.substr(last + 1);
 	int offset_val_addr = std::stoi(var.name.substr(first + 1, last - first - 1));
+	string base = var.address <= -100 ? std::to_string(-var.address - 100) : std::to_string(var.address + 8);
+
+	string has_in_reg = findInRegsiter(Variable{ offset_val, offset_val_addr });
+	if (has_in_reg != "" && index_handled.count(offset_val))
+		return base + "(" + has_in_reg + ")";
+
 	// 获取一个寄存器存储数组下标
 	string index_reg = findValue(Variable{ offset_val, offset_val_addr });
+	if (index_handled.count(offset_val)) return base + "(" + index_reg + ")";
 
-	string base = "";
+	addInstruction(Instruction[MUL] + "\t" + index_reg + ",\t" + index_reg + ",\t$s3");
 	if (var.address <= -100) {
-		base = std::to_string(-var.address - 100);
 		addInstruction(Instruction[ADD] + "\t" + index_reg + ",\t" + index_reg + ",\t$gp");
 	}
 	else {
-		base = std::to_string(var.address + 8);
 		addInstruction(Instruction[ADD] + "\t" + index_reg + ",\t" + index_reg + ",\t$fp");
 	}
+	index_handled.insert(offset_val);
 	return base + "(" + index_reg + ")";
 }
 
@@ -85,10 +107,23 @@ string Generator::getVariableAddress(int addr) {
 	}
 }
 
+string Generator::findInRegsiter(Variable& var) {
+	int occ_size = occupy.size();
+	for (int i = 0; i < occ_size; i++) {
+		// 变量已经在寄存器内
+		if (occupy[i].var.name == var.name) {
+			locked.insert(occupy[i].reg);
+			return occupy[i].reg;
+		}
+	}
+	return "";
+}
+
 /*
 * @brief 寻找空闲的寄存器来安置变量
 */
 string Generator::findFreeRegister(Variable& var) {
+	static int find_start = 0;
 	if (free.size() > 0) {
 		// 如果仍有空闲寄存器就直接取出来使用
 		occupy.push_back(free.back());
@@ -98,7 +133,7 @@ string Generator::findFreeRegister(Variable& var) {
 		return occupy.back().reg;
 	}
 	else {
-		int temp_place = -1;   // 标记存有临时常量的寄存器
+		int temp_place = -1;   // 标记要抢占的寄存器
 		for (int i = 0; i < 10; i++) {
 			if (std::isdigit(occupy[i].var.name[0])) {
 				temp_place = i;
@@ -106,12 +141,13 @@ string Generator::findFreeRegister(Variable& var) {
 			}
 		}
 		if (temp_place == -1) {
-			for (int i = 0; i < 10; i++) {
+			for (int i = (find_start + 1) % 10; i != find_start; i = (i + 1) % 10) {
 				if (locked.count(occupy[i].reg) == 0) {
 					temp_place = i;
 					break;
 				}
 			}
+			find_start = temp_place;
 		}
 		Variable& old_var = occupy[temp_place].var;
 
@@ -134,14 +170,8 @@ string Generator::findFreeRegister(Variable& var) {
 * @brief 寻找变量所在的寄存器位置
 */
 string Generator::findValue(Variable& var, bool load) {
-	int occ_size = occupy.size();
-	for (int i = 0; i < occ_size; i++) {
-		// 变量已经在寄存器内
-		if (occupy[i].var.name == var.name) {
-			locked.insert(occupy[i].reg);
-			return occupy[i].reg;
-		}
-	}
+	string has_in_reg = findInRegsiter(var);
+	if (has_in_reg != "") return has_in_reg;
 
 	if (var.name.find("ARRAY/") != var.name.npos) {
 		// 是一个数组变量，需要特殊处理
@@ -153,6 +183,10 @@ string Generator::findValue(Variable& var, bool load) {
 
 	if (var.name == "0") return "$zero";
 	if (var.name == "1") return "$s0";
+	if (var.name == "2") return "$s1";
+	if (var.name == "3") return "$s2";
+	if (var.name == "4") return "$s3";
+	if (var.name == "5") return "$s4";
 	if (var.name == "$v0") return "$v0";
 	string reg = findFreeRegister(var);
 	if (std::isdigit(var.name[0])) {

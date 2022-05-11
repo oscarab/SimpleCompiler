@@ -29,6 +29,14 @@ double compute(double x, double y, string op) {
 	}
 }
 
+Variable toVariable(string name) {
+	int first = name.find_first_of("/");
+	int last = name.find_last_of("/");
+	string offset_val = name.substr(last + 1);
+	int offset_val_addr = std::stoi(name.substr(first + 1, last - first - 1));
+	return Variable{ offset_val, offset_val_addr };
+}
+
 
 /*
 * @brief 使用DAG进行块内优化
@@ -119,6 +127,38 @@ void Block::optimize() {
 					}
 				}
 			}
+			else if (b.name.find("ARRAY/") != string::npos) {
+				// 如果是将数组元素赋值给变量
+				Variable c = toVariable(b.name);
+				if (nodeMapping.find(c.name) == nodeMapping.end()) {
+					// 如果NODE(C)不存在就新建一个结点
+					nodes.push_back(Node(c));
+					nodeMapping[c.name] = nodes.size() - 1;
+				}
+				int bindex = nodeMapping[b.name], cindex = nodeMapping[c.name];
+				Node node;
+				node.setOperator("=[]");
+				node.setLeft(bindex);
+				node.setRight(cindex);
+				nodes.push_back(node);
+				n = nodes.size() - 1;
+			}
+			else if (target.name.find("ARRAY/") != string::npos) {
+				// 如果是将变量赋值给数组元素
+				Variable c = toVariable(target.name);
+				if (nodeMapping.find(c.name) == nodeMapping.end()) {
+					// 如果NODE(C)不存在就新建一个结点
+					nodes.push_back(Node(c));
+					nodeMapping[c.name] = nodes.size() - 1;
+				}
+				int bindex = nodeMapping[b.name], cindex = nodeMapping[c.name];
+				Node node;
+				node.setOperator("[]=");
+				node.setLeft(cindex);
+				node.setRight(bindex);
+				nodes.push_back(node);
+				n = nodes.size() - 1;
+			}
 
 			p = nodeMapping.find(target.name);
 			if (p == nodeMapping.end()) {
@@ -151,9 +191,27 @@ void Block::optimize() {
 		for (Node& node : nodes) {
 			vector<Variable> vars = node.getSigns();
 			if (!node.isLeaf()) {
-				Variable left = nodes[node.getLeft()].getSigns()[0];
-				Variable right = nodes[node.getRight()].getSigns()[0];
-				opt_codes.push_back(Quaternion(node.getOperator(), left, right, vars[0]));
+				if (node.getOperator() == "[]=") {
+					Variable right = nodes[node.getRight()].getSigns()[0];
+					if (node.getLeft() == node.getRight()) {
+						for (Variable v : nodes[node.getRight()].getSigns()) {
+							if (v.name != right.name) {
+								right = v;
+								break;
+							}
+						}
+					}
+					opt_codes.push_back(Quaternion(":=", right, Variable{ "_" }, vars[0]));
+				}
+				else if (node.getOperator() == "=[]") {
+					Variable left = nodes[node.getLeft()].getSigns()[0];
+					opt_codes.push_back(Quaternion(":=", left, Variable{ "_" }, vars[0]));
+				}
+				else {
+					Variable left = nodes[node.getLeft()].getSigns()[0];
+					Variable right = nodes[node.getRight()].getSigns()[0];
+					opt_codes.push_back(Quaternion(node.getOperator(), left, right, vars[0]));
+				}
 			}
 			for (int i = 1; i < vars.size(); i++) {
 				opt_codes.push_back(Quaternion(":=", vars[0], Variable{ "_" }, vars[i]));
