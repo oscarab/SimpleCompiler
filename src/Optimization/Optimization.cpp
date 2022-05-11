@@ -29,6 +29,7 @@ double compute(double x, double y, string op) {
 	}
 }
 
+
 /*
 * @brief 使用DAG进行块内优化
 */

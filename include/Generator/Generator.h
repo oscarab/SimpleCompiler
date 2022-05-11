@@ -19,10 +19,12 @@ private:
 	vector<string> assembly;
 	vector<Register> free;
 	vector<Register> occupy;
+	unordered_set<string> locked;
 	string label;
 public:
 	void init(unsigned int);
 	void freeAll();
+	string getArrayIndexReg(Variable&);
 	string getVariableAddress(int);
 	string findFreeRegister(Variable&);			// 寻找一个空闲的寄存器
 	string findValue(Variable&, bool=true);		// 寻找变量所在的寄存器（若为常数也进行寻找）

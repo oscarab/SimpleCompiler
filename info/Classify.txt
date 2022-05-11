@@ -13,6 +13,7 @@ Program EpsilonSymbol
 内部变量声明 EpsilonSymbol
 维度列表声明 VariableSymbol
 赋值语句 EpsilonSymbol
+数组表达式 VariableSymbol
 return语句 EpsilonSymbol
 while语句 EpsilonSymbol
 if语句 EpsilonSymbol

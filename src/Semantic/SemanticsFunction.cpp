@@ -298,8 +298,8 @@ void adddim(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 		std::cout << "dim type must be int";
 		exit(0);
 	}
-	if (!std::isdigit(place[0])) {
-		std::cout << "dim must be const";
+	if (!std::isdigit(place[0]) || std::stoi(place) <= 0) {
+		std::cout << "dim must be positive";
 		exit(0);
 	}
 	dim_list->push_back(std::stoi(place));
@@ -322,7 +322,56 @@ void enterarray(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 		width *= dims->at(i);
 	}
 
-	analyzer->enterarray(name, type, width, dim);
+	analyzer->enterarray(name, type, *dims, width, dim);
+}
+
+/**
+ * @brief 计算数组的偏移地址
+ * @param analyzer
+ * @param properties
+*/
+void computearr(SemanticAnalyzer* analyzer, vector<Property>& properties) {
+	string array = unwrap(analyzer, properties[0]);		// 数组名
+	string place = unwrap(analyzer, properties[1]);		// 当前维度表达式
+	string dim = unwrap(analyzer, properties[2]);		// 当前维度数
+	string plus = unwrap(analyzer, properties[3]);		// 要加上的初始偏移量
+
+	string num = analyzer->computearr(array, std::stoi(dim));
+	if (plus == "0" && num == "0") {
+		properties.push_back(Property{ 0, place });
+		properties.push_back(Property{ 0, "" });
+		return;
+	}
+	string temp = analyzer->newtemp();
+	if (plus != "0") {
+		// 第一个维度不用加
+		analyzer->emite("+", plus, place, temp);
+		if (num == "0") {
+			properties.push_back(Property{ 0, temp });
+			properties.push_back(Property{ 0, "" });
+		}
+	}
+	if (num != "0") {
+		// 最后一个维度不用乘
+		if (plus == "0") {	
+			analyzer->emite("*", place, num, temp);
+			properties.push_back(Property{ 0, temp });
+			properties.push_back(Property{ 0, "" });
+		}
+		else {
+			// 之后的维度，继续使用之前创建好的临时变量计算
+			string res = analyzer->newtemp();
+			analyzer->emite("*", temp, num, res);
+
+			// 指向维度加一
+			NonTerminator* pointer = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[2].index));
+			int* p = (int*) pointer->getFields(properties[2].property);
+			*p = *p + 1;
+
+			properties.push_back(Property{ 0, res });
+			properties.push_back(Property{ 0, "" });
+		}
+	}
 }
 
 unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> functionsPointer = {
@@ -345,5 +394,6 @@ unordered_map<string, void (*)(SemanticAnalyzer*, std::vector<Property>&)> funct
 	{"makelist", makelist},
 	{"merge", merge},
 	{"adddim", adddim},
-	{"enterarray", enterarray}
+	{"enterarray", enterarray},
+	{"computearr", computearr}
 };

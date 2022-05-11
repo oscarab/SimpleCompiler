@@ -31,6 +31,7 @@ void LeafSymbol::setupReflect() {
 void VariableSymbol::setupReflect() {
 	reflectMap["place"] = ReflectItem{ "string", (char*)&place };
 	reflectMap["type"] = ReflectItem{ "string", (char*)&type };
+	reflectMap["array"] = ReflectItem{ "string", (char*)&array };
 	reflectMap["width"] = ReflectItem{ "int", (char*)&width };
 	reflectMap["truelist"] = ReflectItem{ "vector", (char*)&truelist };
 	reflectMap["falselist"] = ReflectItem{ "vector", (char*)&falselist };

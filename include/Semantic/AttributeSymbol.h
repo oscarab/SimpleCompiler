@@ -18,6 +18,7 @@ class VariableSymbol : public NonTerminator {
 private:
 	String place;
 	String type;
+	String array;
 	int width;
 	std::vector<int> truelist;
 	std::vector<int> falselist;

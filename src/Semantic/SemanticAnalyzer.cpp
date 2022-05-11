@@ -56,7 +56,7 @@ void SemanticAnalyzer::generateSemanticAction(Grammer* grammer, const char* file
 	while (getline(semanticFile, line)) {
 		size_t start_pos = 0, end_pos = 0;
 		if (line == "$$") {
-			semanticActions.push_back(std::vector<SemanticAction>());
+			semanticActions.push_back(vector<SemanticAction>());
 			continue;
 		}
 
@@ -67,12 +67,12 @@ void SemanticAnalyzer::generateSemanticAction(Grammer* grammer, const char* file
 
 			String str_action = line.substr(start_pos, end_pos - start_pos);
 			if (str_action == "$$") {
-				semanticActions.push_back(std::vector<SemanticAction>());
+				semanticActions.push_back(vector<SemanticAction>());
 				start_pos = end_pos + 1;
 				continue;
 			}
 			size_t stp = 0, edp = str_action.find(";", stp);
-			std::vector<SemanticAction> actions;
+			vector<SemanticAction> actions;
 
 			// 分割出某一个语义动作
 			while (edp != str_action.npos && stp < str_action.size()) {
@@ -215,7 +215,7 @@ void SemanticAnalyzer::reduce(Symbol* symbol, int index, int count) {
 	reductionResult = createAttributeSymbol(symbol);
 
 	// 执行这个符号对应的语义规则
-	std::vector<SemanticAction>& actions = semanticActions[index];
+	vector<SemanticAction>& actions = semanticActions[index];
 	for (SemanticAction& action : actions) {
 		action.execute(this);
 	}
@@ -227,7 +227,7 @@ void SemanticAnalyzer::reduce(Symbol* symbol, int index, int count) {
 	stateStack.push_back(reductionResult);
 }
 
-std::vector<Quaternion>& SemanticAnalyzer::getIntermediateCode() {
+vector<Quaternion>& SemanticAnalyzer::getIntermediateCode() {
 	return intermediateCode;
 }
 
@@ -240,13 +240,31 @@ void SemanticAnalyzer::emite(String op, String arg1, String arg2, String res) {
 	if (op == "jal") {
 		res = std::to_string(nowTable->findProcessPosition(res));
 	}
-	var1.name = arg1;
-	var2.name = arg2;
-	target.name = res;
-	var1.address = nowTable->find(var1.name, true);
-	var2.address = nowTable->find(var2.name, true);
-	target.address = nowTable->find(target.name, true);
 
+	var1.name = arg1;
+	var1.address = nowTable->find(var1.name, true);
+
+	if (op == ":=" && arg2 != "_") {
+		int base = nowTable->find(arg1, true);
+		if (nowTable->findArray(arg1, 0) == -1) {
+			target.name = "ARRAY/" + std::to_string(nowTable->find(res, true)) + "/" + res;
+			target.address = nowTable->find(arg2, true);
+			intermediateCode.push_back(Quaternion(op, var1, var2, target));
+		}
+		else {
+			var1.name = "ARRAY/" + std::to_string(nowTable->find(arg2, true)) + "/" + arg2;
+			var1.address = base;
+			target.name = res;
+			target.address = nowTable->find(target.name, true);
+			intermediateCode.push_back(Quaternion(op, var1, var2, target));
+		}
+		return;
+	}
+	
+	var2.name = arg2;
+	var2.address = nowTable->find(var2.name, true);
+	target.name = res;
+	target.address = nowTable->find(target.name, true);
 	intermediateCode.push_back(Quaternion(op, var1, var2, target));
 }
 
@@ -383,9 +401,19 @@ void SemanticAnalyzer::addpara(String type) {
 	nowTable->addParameter(type);
 }
 
-void SemanticAnalyzer::enterarray(String name, String type, int width, int dim) {
-	nowTable->insertArray(name, type, width, dim);
+void SemanticAnalyzer::enterarray(String name, String type, vector<int>& dim_info, int width, int dim) {
+	nowTable->insertArray(name, type, dim_info, width, dim);
 	emite("dec", "_", "_", std::to_string(width));
+}
+
+String SemanticAnalyzer::computearr(String arr, int dim) {
+	String num = std::to_string(nowTable->findArray(arr, dim));
+	if (num == "-1") {
+		std::cout << "[ERROR] array fault";
+		(*out) << "[ERROR] array fault";
+		exit(0);
+	}
+	return num;
 }
 
 SemanticAnalyzer::~SemanticAnalyzer() {

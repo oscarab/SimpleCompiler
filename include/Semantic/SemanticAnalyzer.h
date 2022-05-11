@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 typedef std::string String;
+using std::vector;
 class Grammer;
 class Symbol;
 
@@ -14,6 +15,7 @@ struct ValTable {
 	String type;
 	int offset;
 	int valType;
+	vector<int> dimension;
 };
 
 class IDTable {
@@ -21,20 +23,21 @@ private:
 	IDTable* previous;					// 前一个符号表
 	int width;							// 符号表宽度
 	int position;						// 若是函数的符号表，记录函数的开始地址
-	std::vector<String> parameters;		// 若是函数的符号表，单独记录形参
+	vector<String> parameters;		// 若是函数的符号表，单独记录形参
 
 	std::unordered_map<String, ValTable> table;
 
-	std::vector<IDTable*> next;			// 下张符号表
+	vector<IDTable*> next;			// 下张符号表
 public:
 	IDTable(IDTable*, int);
 	void insert(String, String, int);					// 插入变量
 	void insertProcess(String, String, int, bool);		// 插入函数
-	void insertArray(String, String, int, int);			// 插入数组
+	void insertArray(String, String, vector<int>&, int, int);	// 插入数组
 	void addNext(IDTable*);								// 添加下张符号表
 	int find(String, bool);								// 寻找变量
 	int findProcess(String);							// 寻找函数
 	int findProcessPosition(String);					// 寻找函数位置
+	int findArray(String, int);
 	int getWidth();
 	String getType(String);
 	IDTable* getNext(int);
@@ -47,17 +50,17 @@ public:
 
 class SemanticAnalyzer {
 private:
-	std::vector<std::vector<SemanticAction>> semanticActions;	// 每个产生式的语义动作
+	vector<vector<SemanticAction>> semanticActions;				// 每个产生式的语义动作
 	std::unordered_map<String, String> symbolDistribute;		// 每个文法符号对应的属性
 	std::ostream* out;
 
 	int newTempCount;
 
-	std::vector<Symbol*> stateStack;
+	vector<Symbol*> stateStack;
 	Symbol* reductionResult;
 	int reductionCount;
 	IDTable* nowTable;											// 符号表
-	std::vector<Quaternion> intermediateCode;					// 中间代码
+	vector<Quaternion> intermediateCode;					// 中间代码
 public:
 	SemanticAnalyzer() : nowTable(NULL), newTempCount(0), out(NULL) { }
 
@@ -71,7 +74,7 @@ public:
 	void reduce(Symbol*, int, int);
 	void outputIntermediateCode(std::ostream&);
 
-	std::vector<Quaternion>& getIntermediateCode();
+	vector<Quaternion>& getIntermediateCode();
 	unsigned int getGlobalSize();
 
 
@@ -91,7 +94,8 @@ public:
 	String lookuptype(String);
 	void checktype(String, String);
 	void addpara(String);
-	void enterarray(String, String, int, int);
+	void enterarray(String, String, vector<int>&, int, int);
+	String computearr(String, int);
 
 	~SemanticAnalyzer();
 };

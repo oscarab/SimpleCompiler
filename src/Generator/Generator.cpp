@@ -51,6 +51,29 @@ void Generator::freeAll() {
 }
 
 /*
+* 获取数组元素的下标寄存器
+*/
+string Generator::getArrayIndexReg(Variable& var) {
+	int first = var.name.find_first_of("/");
+	int last = var.name.find_last_of("/");
+	string offset_val = var.name.substr(last + 1);
+	int offset_val_addr = std::stoi(var.name.substr(first + 1, last - first - 1));
+	// 获取一个寄存器存储数组下标
+	string index_reg = findValue(Variable{ offset_val, offset_val_addr });
+
+	string base = "";
+	if (var.address <= -100) {
+		base = std::to_string(-var.address - 100);
+		addInstruction(Instruction[ADD] + "\t" + index_reg + ",\t" + index_reg + ",\t$gp");
+	}
+	else {
+		base = std::to_string(var.address + 8);
+		addInstruction(Instruction[ADD] + "\t" + index_reg + ",\t" + index_reg + ",\t$fp");
+	}
+	return base + "(" + index_reg + ")";
+}
+
+/*
 * 根据相对地址获取变量位置
 */
 string Generator::getVariableAddress(int addr) {
@@ -71,25 +94,38 @@ string Generator::findFreeRegister(Variable& var) {
 		occupy.push_back(free.back());
 		free.pop_back();
 		occupy.back().var = var;
+		locked.insert(occupy.back().reg);
 		return occupy.back().reg;
 	}
 	else {
-		int temp_place = -1;   // 标记存有临时变量或常量的寄存器
+		int temp_place = -1;   // 标记存有临时常量的寄存器
 		for (int i = 0; i < 10; i++) {
-			if (occupy[i].var.name[0] == '$' || std::isdigit(occupy[i].var.name[0])) {
+			if (std::isdigit(occupy[i].var.name[0])) {
 				temp_place = i;
 				break;
 			}
 		}
-
-		temp_place = temp_place  == -1 ? 0 : temp_place;
+		if (temp_place == -1) {
+			for (int i = 0; i < 10; i++) {
+				if (locked.count(occupy[i].reg) == 0) {
+					temp_place = i;
+					break;
+				}
+			}
+		}
 		Variable& old_var = occupy[temp_place].var;
 
 		// 将被抢占的变量存到内存里
-		addInstruction(Instruction[SW] + "\t" + occupy[temp_place].reg + ",\t" + getVariableAddress(old_var.address));
-
-		// 将需要的变量读到寄存器
-		occupy[temp_place].var = var;
+		if (old_var.name.find("ARRAY/") != old_var.name.npos) {
+			string index_reg = getArrayIndexReg(old_var);
+			addInstruction(Instruction[SW] + "\t" + occupy[temp_place].reg + ",\t" + index_reg);
+		}
+		else if (!std::isdigit(old_var.name[0])) {
+			addInstruction(Instruction[SW] + "\t" + occupy[temp_place].reg + ",\t" + getVariableAddress(old_var.address));
+		}
+		
+		occupy[temp_place].var = var;			// 将需要的变量读到寄存器
+		locked.insert(occupy[temp_place].reg);	// 临时上锁
 		return occupy[temp_place].reg;
 	}
 }
@@ -101,8 +137,18 @@ string Generator::findValue(Variable& var, bool load) {
 	int occ_size = occupy.size();
 	for (int i = 0; i < occ_size; i++) {
 		// 变量已经在寄存器内
-		if (occupy[i].var.name == var.name) 
+		if (occupy[i].var.name == var.name) {
+			locked.insert(occupy[i].reg);
 			return occupy[i].reg;
+		}
+	}
+
+	if (var.name.find("ARRAY/") != var.name.npos) {
+		// 是一个数组变量，需要特殊处理
+		string index_reg = getArrayIndexReg(var);
+		string reg = findFreeRegister(var);
+		addInstruction(Instruction[LW] + "\t" + reg + ",\t" + index_reg);
+		return reg;
 	}
 
 	if (var.name == "0") return "$zero";
@@ -129,6 +175,7 @@ void Generator::generateBatch(vector<Quaternion>& quaternions, unordered_set<str
 	}
 	for (Quaternion& quaternion : quaternions) {
 		string op = quaternion.getOperator();
+		locked.clear();
 
 		if (op == "j") {
 			freeAll();

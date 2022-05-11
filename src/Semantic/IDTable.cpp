@@ -44,8 +44,8 @@ void IDTable::insertProcess(String name, String type, int pos, bool isOuter) {
  * @param w 宽度
  * @param dim 维数
 */
-void IDTable::insertArray(String name, String type, int w, int dim) {
-	table[name] = ValTable{ type, width, dim };
+void IDTable::insertArray(String name, String type, std::vector<int>& dim_info, int w, int dim) {
+	table[name] = ValTable{ type, width, dim , dim_info };
 	width += w;
 }
 
@@ -103,6 +103,27 @@ int IDTable::findProcessPosition(String name) {
 			else {
 				return p->next[value->second.offset]->position;
 			}
+		}
+		p = p->getPrevious();
+	}
+	return -1;
+}
+
+/**
+ * @brief 寻找数组的维度
+ * @param name 名字
+ * * @param dim 维度数
+ * @return 维度对应的数
+*/
+int IDTable::findArray(String name, int dim) {
+	IDTable* p = this;
+	while (p) {
+		auto value = p->table.find(name);
+		if (value != p->table.end() && value->second.dimension.size() > 0) {
+			int dim_size = value->second.dimension.size();
+			if (dim == dim_size) return 0;
+			if (dim > dim_size) return -1;
+			return value->second.dimension[dim];
 		}
 		p = p->getPrevious();
 	}
