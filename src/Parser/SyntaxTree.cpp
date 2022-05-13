@@ -56,7 +56,7 @@ void SyntaxNode::write(int level, char end) {
 	}
 
 	tab(log, level);
-	log->logln("}" + end);
+	log->logln("}" + string(1, end));
 }
 
 /**

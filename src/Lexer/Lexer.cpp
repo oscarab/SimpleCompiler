@@ -149,7 +149,7 @@ std::vector<Token>* Lexer::getTokens() {
 }
 
 void Lexer::writeTokens() {
-	Log* log = FileLog::getInstance("token.txt");
+	Log* log = FileLog::getInstance("tokens.txt");
 	for (Token& token : tokens) {
 		token.write(log, 0, true);
 	}
