@@ -1,7 +1,8 @@
 #include "Lexer/Token.h"
 #include "Parser/Symbol.h"
+#include "Output/Log.h"
 
-extern void tab(std::ostream& out, int level);
+extern void tab(Log* log, int level);
 
 Terminator::Terminator(Token _token) : token(_token) {
 }
@@ -45,11 +46,11 @@ void NonTerminator::insertProduction(SymbolChain& psymbol) {
  * @param out 输出源
  * @param level 缩进
 */
-void NonTerminator::write(std::ostream& out, int level) {
-	tab(out, level);
-	out << "\"type\": " << "\"NonTerminator\"" << "," << std::endl;
-	tab(out, level);
-	out << "\"attribute\": \"" << name << "\"," << std::endl;
+void NonTerminator::write(Log* log, int level) {
+	tab(log, level);
+	log->logln("\"type\": \"NonTerminator\",");
+	tab(log, level);
+	log->logln("\"attribute\": \"" + name + "\",");
 }
 
 /**
@@ -57,8 +58,8 @@ void NonTerminator::write(std::ostream& out, int level) {
  * @param out 输出源
  * @param level 缩进
 */
-void Terminator::write(std::ostream& out, int level) {
-	token.write(out, level, false);
+void Terminator::write(Log* log, int level) {
+	token.write(log, level, false);
 }
 
 void Terminator::setupReflect() { }

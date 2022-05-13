@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "Lexer/Token.h"
+#include "Output/Log.h"
 
 extern const char* TokenTypeStr[] = { "KEY_WORD", "ID", "OPERATOR", "CONSTANT",
 							"BOUNDARY", "BRACKET" , "END"};
@@ -55,9 +56,9 @@ std::vector<std::string> constantTable;	// 词法分析常数表
  * @param out 输出源
  * @param level 数量
 */
-void tab(std::ostream& out, int level) {
+void tab(Log* log, int level) {
 	while (level--) {
-		out << '\t';
+		log->log("\t");
 	}
 }
 

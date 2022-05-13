@@ -95,7 +95,7 @@ void Block::optimize() {
 						nodeMapping.erase(c.name);
 					}
 
-					string new_name = std::to_string(result);
+					string new_name = std::to_string((int) result);
 					// 如果合并后的结点不存在也新建一个
 					if (nodeMapping.find(new_name) == nodeMapping.end()) {
 						nodes.push_back(Node(Variable{ new_name }));

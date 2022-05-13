@@ -1,6 +1,8 @@
 #include "Semantic/SemanticAnalyzer.h"
 #include "Semantic/AttributeSymbol.h"
 #include "Parser/Grammer.h"
+#include "Output/Log.h"
+#include "Output/Exception.h"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -178,10 +180,6 @@ Symbol* SemanticAnalyzer::createAttributeSymbol(Symbol* symbol) {
 	}
 }
 
-void SemanticAnalyzer::setOutStream(std::ostream& _out) {
-	out = &_out;
-}
-
 /**
  * @brief 按偏移量从符号栈中取文法符号
  * @param index 偏移量
@@ -197,8 +195,9 @@ Symbol* SemanticAnalyzer::getSymbolFromStack(int index) {
 /**
  * @brief 输出中间代码
 */
-void SemanticAnalyzer::outputIntermediateCode(std::ostream& out) {
+void SemanticAnalyzer::outputIntermediateCode() {
 	int p = 0;
+	std::ostream& out = FileLog::getInstance("IntermediateCode.txt")->origin();
 	for (Quaternion& q : intermediateCode) {
 		out << std::setw(5) << p;
 		p++;
@@ -288,9 +287,7 @@ String SemanticAnalyzer::lookup(String name) {
 		return name;
 	}
 
-	std::cout << "[ERROR] undeclared identifier: " << name;
-	(*out) << "[ERROR] undeclared identifier: " << name;
-	exit(0);
+	throw CompilerException("[ERROR] Undeclared identifier: " + name);
 }
 
 void SemanticAnalyzer::lookupproc(String name, String type) {
@@ -308,9 +305,7 @@ void SemanticAnalyzer::lookupproc(String name, String type) {
 				type_check = p->getNext(place)->checkParameters(type);
 			}
 			if (!type_check) {
-				std::cout << "[ERROR] parameter type mismatch: " << name;
-				(*out) << "[ERROR] parameter type mismatch: " << name;
-				exit(0);
+				throw CompilerException("[ERROR] Parameter type mismatch: " + name);
 			}
 				
 			return;
@@ -318,17 +313,13 @@ void SemanticAnalyzer::lookupproc(String name, String type) {
 		p = p->getPrevious();
 	}
 
-	std::cout << "[ERROR] undeclared identifier: " << name;
-	(*out) << "[ERROR] undeclared identifier: " << name;
-	exit(0);
+	throw CompilerException("[ERROR] Undeclared identifier: " + name);
 }
 
 void SemanticAnalyzer::checkmain() {
 	int ind = nowTable->findProcess("main");
 	if (ind == -100) {
-		std::cout << "[ERROR] no entry defined";
-		(*out) << "[ERROR] no entry defined";
-		exit(0);
+		throw CompilerException("[ERROR] Main function undefined");
 	}
 }
 
@@ -337,9 +328,7 @@ void SemanticAnalyzer::notlookup(String name) {
 
 	int place = p->find(name, false);
 	if (place != -1) {
-		std::cout << "[ERROR] identifier redefinition: " << name;
-		(*out) << "[ERROR] identifier redefinition: " << name;
-		exit(0);
+		throw CompilerException("[ERROR] Identifier redefinition: " + name);
 	}
 }
 
@@ -384,16 +373,12 @@ String SemanticAnalyzer::lookuptype(String name) {
 		p = p->getPrevious();
 	}
 
-	std::cout << "[ERROR] undeclared identifier: " << name;
-	(*out) << "[ERROR] undeclared identifier: " << name;
-	exit(0);
+	throw CompilerException("[ERROR] Undeclared identifier: " + name);
 }
 
 void SemanticAnalyzer::checktype(String type1, String type2) {
 	if (type1 == "void" || type2 == "void" || type1 != type2) {
-		std::cout << "[ERROR] error type: " << type1 << " and " << type2;
-		(*out) << "[ERROR] error type: " << type1 << " and " << type2;
-		exit(0);
+		throw CompilerException("[ERROR] Error type: " + type1 + " and " + type2);
 	}
 }
 
@@ -403,15 +388,12 @@ void SemanticAnalyzer::addpara(String type) {
 
 void SemanticAnalyzer::enterarray(String name, String type, vector<int>& dim_info, int width, int dim) {
 	nowTable->insertArray(name, type, dim_info, width, dim);
-	emite("dec", "_", "_", std::to_string(width));
 }
 
 String SemanticAnalyzer::computearr(String arr, int dim) {
 	String num = std::to_string(nowTable->findArray(arr, dim));
 	if (num == "-1") {
-		std::cout << "[ERROR] array fault";
-		(*out) << "[ERROR] array fault";
-		exit(0);
+		throw CompilerException("[ERROR] Array fault");
 	}
 	return num;
 }

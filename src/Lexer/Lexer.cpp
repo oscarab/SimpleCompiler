@@ -1,5 +1,7 @@
 #include "Lexer/Lexer.h"
 #include "Output/Output.h"
+#include "Output/Log.h"
+#include "Output/Exception.h"
 #include <iostream>
 
 using namespace Lexical;
@@ -8,8 +10,7 @@ extern const char* TokenTypeStr[];
 extern const char* TokenAttrStr[];
 extern std::vector<std::string> idTable;		// 标识符表
 extern std::vector<std::string> constantTable;	// 常数表
-extern void tab(std::ostream& out, int level);
-extern Output output;
+extern void tab(Log* log, int level);
 
 /***********单词二元组***********/
 
@@ -53,38 +54,37 @@ bool Token::isEmpty() {
 
 /**
  * @brief 输出
- * @param out 输出源
  * @param level 缩进
  * @param package 最外是否用花括号包围
 */
-void Token::write(std::ostream& out, int level, bool package) {
+void Token::write(Log* log, int level, bool package) {
 	if (package) {
-		tab(out, level);
-		out << "{" << std::endl;
+		tab(log, level);
+		log->logln("{");
 	}
 	else {
 		level--;
 	}
 
-	tab(out, level + 1);
-	out << "\"type\": \"" << TokenTypeStr[int(type)] << "\"," << std::endl;
+	tab(log, level + 1);
+	log->log("\"type\": \"")->log(TokenTypeStr[int(type)])->logln("\",");
 	
 	if (attribute == TokenAttribute::RealID) {
-		tab(out, level + 1);
-		out << "\"attribute\": \"" << idTable[index] << "\"," << std::endl;
+		tab(log, level + 1);
+		log->log("\"attribute\": \"")->log(idTable[index])->logln("\",");
 	}
 	else if (attribute == TokenAttribute::RealConstant) {
-		tab(out, level + 1);
-		out << "\"attribute\": \"" << constantTable[index] << "\"," << std::endl;
+		tab(log, level + 1);
+		log->log("\"attribute\": \"")->log(constantTable[index])->logln("\",");
 	}
 	else {
-		tab(out, level + 1);
-		out << "\"attribute\": \"" << TokenAttrStr[int(attribute)] << "\"" << "," << std::endl;
+		tab(log, level + 1);
+		log->log("\"attribute\": \"")->log(TokenAttrStr[int(attribute)])->logln("\",");
 	}
 
 	if (package) {
-		tab(out, level);
-		out << "}" << std::endl;
+		tab(log, level);
+		log->logln("}");
 	}
 }
 
@@ -101,15 +101,13 @@ bool Token::operator==(const Token& token) const {
 Lexer::Lexer(const char* fileName) {
 	codeReader = new Reader(fileName);
 	scanner = new Scanner();
-
 }
 
 /**
  * @brief 运行词法分析
- * @param out 文件输出
  * @return 是否成功
 */
-bool Lexer::run(std::ostream& out) {
+void Lexer::run() {
 	scanner->setBuffer(codeReader->getBuffer());
 	scanner->setEndPoint(codeReader->getReadin());
 	scanner->setIsComplete(codeReader->getReadin() < BLOCK_SIZE);
@@ -132,9 +130,7 @@ bool Lexer::run(std::ostream& out) {
 		}
 		else if (token.getType() == TokenType::FAIL) {
 			// 词法分析遭遇错误
-			std::cout << "lexical error!" << std::endl;
-			out << "lexical error!" << std::endl;
-			return false;
+			throw CompilerException("[ERROR] Lexical error!", token);
 		}
 		else if (token.getType() == TokenType::COMPLETE) {
 			break;
@@ -146,7 +142,6 @@ bool Lexer::run(std::ostream& out) {
 
 	// 加入结束字符
 	tokens.push_back(Token(TokenType::END, TokenAttribute::None));
-	return true;
 }
 
 std::vector<Token>* Lexer::getTokens() {
@@ -154,8 +149,9 @@ std::vector<Token>* Lexer::getTokens() {
 }
 
 void Lexer::writeTokens() {
+	Log* log = FileLog::getInstance("token.txt");
 	for (Token& token : tokens) {
-		token.write(output[3], 0, true);
+		token.write(log, 0, true);
 	}
 }
 

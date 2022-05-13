@@ -1,7 +1,8 @@
 #include "Parser/Parser.h"
+#include "Output/Log.h"
 #include <iostream>
 
-extern void tab(std::ostream& out, int level);
+extern void tab(Log* log, int level);
 
 /**
  * @brief 获取语法树
@@ -29,33 +30,33 @@ void SyntaxNode::addChild(SyntaxNode* node) {
 
 /**
  * @brief 输出
- * @param out 输出源
  * @param level 缩进
 */
-void SyntaxNode::write(std::ostream& out, int level, char end) {
-	tab(out, level);
-	out << "{" << std::endl;
+void SyntaxNode::write(int level, char end) {
+	Log* log = FileLog::getInstance("tree.txt");
+	tab(log, level);
+	log->logln("{");
 
-	symbol->write(out, level + 1);
+	symbol->write(log, level + 1);
 
-	tab(out, level + 1);
-	out << "\"child\": [";
+	tab(log, level + 1);
+	log->log("\"child\": [");
 
 	int size = child.size();
-	out << (size > 0 ? "" : "]") << std::endl;
+	log->logln((size > 0 ? "" : "]"));
 	for (int i = 0; i < size; i++) {
 		SyntaxNode* node = child[i];
 
 		if (i < size - 1) {
-			node->write(out, level + 2, ',');
+			node->write(level + 2, ',');
 		}
 		else {
-			node->write(out, level + 2, ']');
+			node->write(level + 2, ']');
 		}
 	}
 
-	tab(out, level);
-	out << "}" << end << std::endl;
+	tab(log, level);
+	log->logln("}" + end);
 }
 
 /**

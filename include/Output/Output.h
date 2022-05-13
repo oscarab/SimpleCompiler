@@ -4,25 +4,29 @@
 #include <fstream>
 #include <vector>
 
+using std::string;
+
 class Terminator;
 class Parser;
+class Log;
 
 class Output {
 private:
-	std::vector<std::ofstream*> outs;
+	static Output* output;
+	Log* console;
+	Log* file;
 	bool isStep;
-
+	Output();
 public:
-	void add(const char*);
-	std::ofstream& operator[](int);
-	void setStep(bool);
+	static Output* getInstance() {
+		return output;
+	}
 
+	void setStep(bool);
 	void beginningMessage(Terminator*, Parser*);
 	void reductionMessage(int, int);
 	void movingMessage(int);
-	void sendMessage(std::string);
-
-	~Output();
+	void sendMessage(string);
 };
 
 #endif // !OUTPUT_H

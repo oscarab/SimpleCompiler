@@ -1,6 +1,7 @@
 #include "Output/Output.h"
 #include "Parser/Symbol.h"
 #include "Parser/Parser.h"
+#include "Output/Log.h"
 #include <sstream>
 #include <cstring>
 #include <iostream>
@@ -9,30 +10,31 @@
 using std::string;
 using std::ofstream;
 
+Output* Output::output = new Output();
+
+Output::Output() {
+	isStep = false;
+	console = ConsoleLog::getInstance();
+	file = nullptr;
+}
+
 void Output::setStep(bool flag) {
 	isStep = flag;
-}
-
-void Output::add(const char* file) {
-	outs.push_back(new ofstream(file));
-}
-
-std::ofstream& Output::operator[](int idx) {
-	return *outs[idx];
+	file = FileLog::getInstance("analysis.txt");
 }
 
 void Output::beginningMessage(Terminator* terminator, Parser* parser) {
 	if (isStep) {
 		system("cls");
-		parser->writeStack(std::cout);
-		std::cout << std::endl << "Now at: " << std::endl;
-		terminator->write(std::cout, 0);
-		std::cout << std::endl << "Action: " << std::endl;
+		parser->writeStack(console->origin());
+		console->enter()->logln("Now at: ");
+		terminator->write(console, 0);
+		console->enter()->logln("Action");
 	}
-	parser->writeStack(*outs[1]);
-	*outs[1] << std::endl << "Now at: " << std::endl;
-	terminator->write(*outs[1], 0);
-	*outs[1] << std::endl << "Action: " << std::endl;
+	parser->writeStack(file->origin());
+	file->enter()->logln("Now at: ");
+	terminator->write(file, 0);
+	file->enter()->logln("Action");
 }
 
 void Output::reductionMessage(int reduce_cnt, int dest) {
@@ -41,10 +43,10 @@ void Output::reductionMessage(int reduce_cnt, int dest) {
 	str << "Goto state " << dest << std::endl;
 
 	if (isStep) {
-		std::cout << str.str();
+		console->log(str.str());
 		_getch();
 	}
-	*outs[1] << str.str();
+	file->log(str.str());
 }
 
 void Output::movingMessage(int dest) {
@@ -53,20 +55,13 @@ void Output::movingMessage(int dest) {
 	str << "Goto state " << dest << std::endl;
 
 	if (isStep) {
-		std::cout << str.str();
+		console->log(str.str());
 		_getch();
 	}
-	*outs[1] << str.str();
+	file->log(str.str());
 }
 
 void Output::sendMessage(String text) {
-	std::cout << text << std::endl;
-	*outs[1] << text << std::endl;
-}
-
-Output::~Output() {
-	for (ofstream* fout : outs) {
-		fout->close();
-		delete fout;
-	}
+	console->logln(text);
+	file->logln(text);
 }

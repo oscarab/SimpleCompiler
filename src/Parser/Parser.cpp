@@ -1,22 +1,25 @@
 #include "Parser/Parser.h"
 #include "Lexer/Lexer.h"
 #include "Output/Output.h"
+#include "Output/Log.h"
+#include "Output/Exception.h"
 #include "Optimization/Optimization.h"
 #include <iostream>
 #include <iomanip>
 
-extern void tab(std::ostream& out, int level);
+extern void tab(Log* log, int level);
 extern int getWidth(int number, std::string str);
 extern std::string convertToString(Token& token);
-extern Output output;
 
 /**
  * @brief LR(1)语法分析器构造函数
  * @param fileName 文法文件名
 */
 Parser::Parser(const char* fileName) : machine(fileName), analyzer() {
+	Output* output = Output::getInstance();
+	output->sendMessage("start build machine...");
 	machine.create();
-
+	output->sendMessage("start build SemanticAction...");
 	analyzer.generateSemanticAction(machine.getGrammer(), "Semantic.txt");
 	analyzer.distributeAttributeSymbols("Classify.txt");
 }
@@ -69,19 +72,18 @@ void Parser::createTable() {
 /**
  * @brief 使用LR(1)进行语法分析
  * @param lexer 词法分析器
- * @return 是否分析成功
 */
-bool Parser::analysis(Lexical::Lexer* lexer) {
+void Parser::analysis(Lexical::Lexer* lexer) {
 	// 获取Token流
-	if (!lexer->run(output[1])) return false;
+	lexer->run();
 
+	Output& output = *Output::getInstance();
 	std::vector<Token>* tokens = lexer->getTokens();
 	int len = tokens->size();
 	Grammer* grammer = machine.getGrammer();
 
 	stateStack.push_back(0);
 	symbolStack.push_back(grammer->getSymbol(String("#")));
-	analyzer.setOutStream(output[1]);
 
 	for (int i = 0; i < len; i++) {
 		int nowState = stateStack[stateStack.size() - 1];
@@ -93,17 +95,17 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 
 		// 遇到可能错误的语法
 		if (table[nowState].count(&terminator) == 0) {
-			output.sendMessage("syntax error!");
-			return false;
+			throw CompilerException("[ERROR] Syntax error!", token);
 		}
 
 		// 需要采取的动作
 		Action action = table[nowState][&terminator];
 		
 		if (action.accept) {
+			// 语法分析与语义分析成功
 			output.sendMessage("accept!");
-			analyzer.outputIntermediateCode(output[2]);
-			return true;
+			analyzer.outputIntermediateCode();
+			return;
 		}
 		else if (action.reduction) {
 			// 归约
@@ -116,7 +118,20 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 			}
 
 			int reduce_cnt = pop_cnt;
-			analyzer.reduce(product.symbolPoint, grammer->getProductionCount(product.symbolPoint) + product.productionIndex, pop_cnt);
+			try {
+				analyzer.reduce(product.symbolPoint, grammer->getProductionCount(product.symbolPoint) + product.productionIndex, pop_cnt);
+			}
+			catch (const CompilerException& e) {
+				// 语义分析出现错误，继续向上抛出具体异常
+				for (int i = 0; i < pop_cnt; i++) {
+					if (product_str[i]->isEnd()) {
+						Terminator* terminator = static_cast<Terminator*>(product_str[i]);
+						throw CompilerException(e.getError(), terminator->getToken());
+					}
+				}
+				throw;
+			}
+			
 			tree.construct(product.symbolPoint, pop_cnt);
 
 			while (pop_cnt--) {
@@ -147,16 +162,14 @@ bool Parser::analysis(Lexical::Lexer* lexer) {
 			output.movingMessage(action.go);
 		}
 	}
-	return false;
 }
 
 /*
 * @brief 对中间代码进行优化
 */
-bool Parser::optimize() {
+void Parser::optimize() {
 	optimization.splitBlocks(analyzer.getIntermediateCode());
 	optimization.optimize();
-	return true;
 }
 
 /*
@@ -179,6 +192,8 @@ void Parser::writeTable() {
 	using namespace std;
 	vector<State>* states = machine.getStates();
 	int size = states->size();			// 状态数量
+	Log* log = FileLog::getInstance("table.txt");
+	ostream& out = log->origin();
 
 	// 筛选终结符和非终结符
 	std::vector<Terminator*> terminator;
@@ -215,40 +230,40 @@ void Parser::writeTable() {
 	whole_w += term_cnt + non_term_cnt + 2;
 
 	// 表头
-	output[0] << "|";
-	output[0] << setw(width[0]) << "状态";
-	output[0] << "|";
+	out << "|";
+	out << setw(width[0]) << "状态";
+	out << "|";
 	for (int i = 0; i < term_cnt; i++) {
 		Token token = terminator[i]->getToken();
-		output[0] << setw(width[i + 1]) << convertToString(token);
-		output[0] << "|";
+		out << setw(width[i + 1]) << convertToString(token);
+		out << "|";
 	}
 	for (int i = 0; i < non_term_cnt; i++) {
-		output[0] << setw(width[term_cnt + i + 1]) << non_terminator[i]->getName();
-		output[0] << "|";
+		out << setw(width[term_cnt + i + 1]) << non_terminator[i]->getName();
+		out << "|";
 	}
-	output[0] << std::endl;
+	out << std::endl;
 
 	// 各个状态
 	for (int i = 0; i < size; i++) {
-		output[0] << "|";
-		output[0] << setw(width[0]) << i;
-		output[0] << "|";
+		out << "|";
+		out << setw(width[0]) << i;
+		out << "|";
 		for (int j = 0; j < term_cnt + non_term_cnt; j++) {
 			Symbol* sym = j < term_cnt? (Symbol*) terminator[j] : non_terminator[j - term_cnt];
 			auto iter = table[i].find(sym);
-			output[0] << setw(width[j + 1]);
+			out << setw(width[j + 1]);
 
 			if (iter != table[i].end()) {
 				Action action = (*iter).second;
-				output[0] << action.toString();
+				out << action.toString();
 			}
 			else {
-				output[0] << " ";
+				out << " ";
 			}
-			output[0] << "|";
+			out << "|";
 		}
-		output[0] << std::endl;
+		out << std::endl;
 	}
 }
 

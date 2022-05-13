@@ -337,12 +337,13 @@ void computearr(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 	string plus = unwrap(analyzer, properties[3]);		// 要加上的初始偏移量
 
 	string num = analyzer->computearr(array, std::stoi(dim));
+	string temp = analyzer->newtemp();
 	if (plus == "0" && num == "0") {
-		properties.push_back(Property{ 0, place });
+		analyzer->emite(":=", place, "_", temp);
+		properties.push_back(Property{ 0, temp });
 		properties.push_back(Property{ 0, "" });
 		return;
 	}
-	string temp = analyzer->newtemp();
 	if (plus != "0") {
 		// 第一个维度不用加
 		analyzer->emite("+", plus, place, temp);

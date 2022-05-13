@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+class Log;
+
 // 单词种类
 enum class TokenType {
 	KEY_WORD,	// 关键字
@@ -46,8 +48,11 @@ public:
 	TokenAttribute getAttribute();		// 获取单词属性
 	bool isEmpty();						// 是否为空
 
-	void write(std::ostream&, int, bool);
+	void write(Log*, int, bool);
 	void setIndex(int);
+
+	int getRow() { return row; }
+	int getColumn() { return col; }
 
 	bool operator==(const Token& token) const;
 };

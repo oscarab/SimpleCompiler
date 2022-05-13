@@ -25,7 +25,7 @@ public:
 	void addChild(SyntaxNode*);
 	NodeList* getChildren();
 	Symbol* getSymbol();
-	void write(std::ostream&, int, char);
+	void write(int, char);
 };
 
 // 语法树
@@ -88,8 +88,8 @@ public:
 	Parser(const char*);
 
 	void createTable();								// 建立分析表
-	bool analysis(Lexical::Lexer*);					// 开始语法分析
-	bool optimize();								// 优化
+	void analysis(Lexical::Lexer*);					// 开始语法分析
+	void optimize();								// 优化
 	void generate();								// 生成目标代码
 
 	SyntaxTree* getTree();							// 获取语法树

@@ -52,7 +52,6 @@ class SemanticAnalyzer {
 private:
 	vector<vector<SemanticAction>> semanticActions;				// 每个产生式的语义动作
 	std::unordered_map<String, String> symbolDistribute;		// 每个文法符号对应的属性
-	std::ostream* out;
 
 	int newTempCount;
 
@@ -62,9 +61,8 @@ private:
 	IDTable* nowTable;											// 符号表
 	vector<Quaternion> intermediateCode;					// 中间代码
 public:
-	SemanticAnalyzer() : nowTable(NULL), newTempCount(0), out(NULL) { }
+	SemanticAnalyzer() : nowTable(NULL), newTempCount(0) { }
 
-	void setOutStream(std::ostream&);							// 设置信息输出的文件
 	void generateSemanticAction(Grammer*, const char*);			// 生成语义动作
 	void distributeAttributeSymbols(const char*);				// 分配属性
 	Symbol* createAttributeSymbol(Symbol*);						// 创建带属性的文法符号
@@ -72,7 +70,7 @@ public:
 	Symbol* getSymbolFromStack(int index);
 	void moveIn(Symbol*);
 	void reduce(Symbol*, int, int);
-	void outputIntermediateCode(std::ostream&);
+	void outputIntermediateCode();
 
 	vector<Quaternion>& getIntermediateCode();
 	unsigned int getGlobalSize();

@@ -8,6 +8,7 @@
 
 class Symbol;
 class Token;
+class Log;
 typedef std::string String;
 typedef std::vector<Symbol*> SymbolChain;
 
@@ -16,7 +17,7 @@ class Symbol {
 public:
 	virtual bool isEnd() const = 0;					// 是否是终结符
 
-	virtual void write(std::ostream&, int) = 0;
+	virtual void write(Log* log, int) = 0;
 	bool operator==(const Symbol& symbol) const;
 };
 
@@ -29,7 +30,7 @@ public:
 	Token getToken() const;					// 获取终结符Token
 	bool isEnd() const;
 
-	virtual void write(std::ostream&, int);
+	virtual void write(Log* log, int);
 	virtual void setupReflect();
 };
 
@@ -45,7 +46,7 @@ public:
 	std::vector<SymbolChain>* getProductions();
 	void insertProduction(SymbolChain&);	// 插入新产生式
 
-	virtual void write(std::ostream&, int);
+	virtual void write(Log* log, int);
 	virtual void setupReflect();
 };
 

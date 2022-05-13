@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include "Semantic/Quaternion.h"
 
 using std::vector;
@@ -25,6 +26,7 @@ private:
 public:
 	void init(unsigned int);
 	void freeAll();
+	void freeArrayInRegister();
 	string getArrayIndexReg(Variable&);
 	string getVariableAddress(int);
 	string findInRegsiter(Variable&);

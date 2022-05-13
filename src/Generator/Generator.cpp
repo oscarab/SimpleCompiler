@@ -1,4 +1,6 @@
 #include "Generator/Generator.h"
+#include "Output/Log.h"
+#include <algorithm>
 
 
 const string Instruction[] = {"add", "sub", "addi", "subi", "mul", "div",
@@ -63,6 +65,19 @@ void Generator::freeAll() {
 
 		free.push_back(occupy.back());
 		occupy.pop_back();
+	}
+}
+
+void Generator::freeArrayInRegister() {
+	for (int i = 0; i < occupy.size(); i++) {
+		Register& regist = occupy[i];
+		Variable& var = regist.var;
+		if (var.name.find("ARRAY/") != var.name.npos) {
+			string index_reg = getArrayIndexReg(var);
+			addInstruction(Instruction[SW] + "\t" + regist.reg + ",\t" + index_reg);
+			free.push_back(occupy[i]);
+			occupy.erase(occupy.begin() + i);
+		}
 	}
 }
 
@@ -135,7 +150,8 @@ string Generator::findFreeRegister(Variable& var) {
 	else {
 		int temp_place = -1;   // 标记要抢占的寄存器
 		for (int i = 0; i < 10; i++) {
-			if (std::isdigit(occupy[i].var.name[0])) {
+			// 先抢占存放常量的
+			if (std::isdigit(occupy[i].var.name[0]) && locked.count(occupy[i].reg) == 0) {
 				temp_place = i;
 				break;
 			}
@@ -316,6 +332,7 @@ void Generator::generateBatch(vector<Quaternion>& quaternions, unordered_set<str
 			string result = findValue(quaternion.getResult(), false);
 			addInstruction(Instruction[OR] + "\t" + result + ",\t$zero,\t" + reg);
 		}
+		freeArrayInRegister();
 	}
 	if (!quaternions.back().isJump() && quaternions.back().getOperator() != "jr") {
 		freeAll();
@@ -323,7 +340,8 @@ void Generator::generateBatch(vector<Quaternion>& quaternions, unordered_set<str
 }
 
 void Generator::out() {
-	for (string instr : assembly) {
-		std::cout << instr << std::endl;
+	Log* log = FileLog::getInstance("MipsAsm.asm");
+	for (string& instr : assembly) {
+		log->logln(instr);
 	}
 }
