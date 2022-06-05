@@ -75,8 +75,13 @@ void Parser::createTable() {
 */
 void Parser::analysis(Lexical::Lexer* lexer) {
 	// 获取Token流
-	lexer->run();
-
+	try{
+		lexer->run();
+	}
+	catch (const CompilerException& e) {
+		throw;
+	}
+	
 	Output& output = *Output::getInstance();
 	std::vector<Token>* tokens = lexer->getTokens();
 	int len = tokens->size();
@@ -123,13 +128,7 @@ void Parser::analysis(Lexical::Lexer* lexer) {
 			}
 			catch (const CompilerException& e) {
 				// 语义分析出现错误，继续向上抛出具体异常
-				for (int i = 0; i < pop_cnt; i++) {
-					if (product_str[i]->isEnd()) {
-						Terminator* terminator = static_cast<Terminator*>(product_str[i]);
-						throw CompilerException(e.getError(), terminator->getToken());
-					}
-				}
-				throw;
+				throw CompilerException(e.getError(), token);
 			}
 			
 			tree.construct(product.symbolPoint, pop_cnt);

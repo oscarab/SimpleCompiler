@@ -352,6 +352,10 @@ void computearr(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 			properties.push_back(Property{ 0, "" });
 		}
 	}
+	// 指向维度加一
+	NonTerminator* pointer = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[2].index));
+	int* p = (int*)pointer->getFields(properties[2].property);
+	*p = *p + 1;
 	if (num != "0") {
 		// 最后一个维度不用乘
 		if (plus == "0") {	
@@ -363,11 +367,6 @@ void computearr(SemanticAnalyzer* analyzer, vector<Property>& properties) {
 			// 之后的维度，继续使用之前创建好的临时变量计算
 			string res = analyzer->newtemp();
 			analyzer->emite("*", temp, num, res);
-
-			// 指向维度加一
-			NonTerminator* pointer = static_cast<NonTerminator*>(analyzer->getSymbolFromStack(properties[2].index));
-			int* p = (int*) pointer->getFields(properties[2].property);
-			*p = *p + 1;
 
 			properties.push_back(Property{ 0, res });
 			properties.push_back(Property{ 0, "" });

@@ -13,7 +13,7 @@ $$|$$|$$|$$|$$|$$
 notlookup(2.name);enter(2.name,3.type,3.width);emit('dec','_','_',3.width);|notlookup(3.name);enterarray(3.name,4.type,2.truelist);
 adddim(4.truelist,2.name,2.type);|adddim(4.truelist,2.name,2.type);5.truelist=4.truelist;
 4.place=lookup(4.name);4.type=lookuptype(4.name);checktype(4.type,2.type);emit(':=',2.place,'_',4.place);|checktype(4.type,2.type);emit(':=',2.place,4.array,4.place);
-5.type=lookuptype(4.name);5.array=4.name;5.width=2;5.place=computearr(4.name,2.place,'1','0');|5.type=4.type;5.array=4.array;5.width=4.width;5.place=computearr(4.array,2.place,5.width,4.place);
+5.type=lookuptype(4.name);5.array=4.name;5.width=1;5.place=computearr(4.name,2.place,5.width,'0');|5.type=4.type;5.array=4.array;5.width=4.width;5.place=computearr(4.array,2.place,5.width,4.place);
 emit(':=',2.place,'_','$v0');emit('jr','_','_','$31');|emit(':=','0','_','$v0');emit('jr','_','_','$31');
 emit('j','_','_',8.quad);backpatch(5.truelist,3.quad);backpatch(5.falselist,1.quad);
 backpatch(5.truelist,3.quad);backpatch(5.falselist,1.quad);|backpatch(8.truelist,6.quad);backpatch(8.falselist,3.quad);backpatch(3.nextlist,1.quad);

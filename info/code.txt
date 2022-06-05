@@ -1,28 +1,23 @@
-int global;
-int arr[10];
-
-/*
-int test1(int i, int j, int k) {
+int global; int arr[10];
+int find(int i, int j, int k) {  // ¶þ·Ö
 	while (i < j) {
 		int mid;
 		mid = (i + j) / 2;
-		if (mid == k) {
+		if (arr[mid] == k) {
 			return mid;
 		} 
-		if (mid < k) {
+		if (arr[mid] < k) {
 			i = mid + 1;
 		} else {
 			j = mid - 1;
 		}
 	}
 	return i;
-} */
-
-void quickSort(int l, int r) {
+}
+void quickSort(int l, int r) { // ¿ìÅÅ
 	if (l >= r) {
 		return;
 	}
-
 	int x;
 	x = arr[l + (r - l) / 2];
 	int i;
@@ -49,18 +44,15 @@ void quickSort(int l, int r) {
 	quickSort(j+1,r);
 	return;
 }
-
 int main() {
 	int l;
 	int r;
-	l = 0;
-	r = 9;
-	global = 9;
+	l = 0; r = 9; global = 9;
 	while (global >= 0) {
 		arr[9-global] = global;
 		global = global - 1;
 	}
 	quickSort(l,r);
-	
+	global = find(0, 9, 3);
 	return 0;
 }
